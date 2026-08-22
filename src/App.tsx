@@ -1,14 +1,13 @@
 import * as Diff from 'diff';                                                                                                                                  
 import './App.css';
-import { useState, useRef, useEffect } from 'react';                                                                                                           
+import { useState, useRef, useEffect, type ChangeEvent, type CSSProperties } from 'react';
 import {                                                                                                                                                       
   Send,                                                                                                                                                        
   SlidersHorizontal,                                                                                                                                           
   AlertCircle,                                                                                                                                                 
   Zap,                                                                                                                                                         
   RefreshCw,                                                                                                                                                   
-  RotateCcw,                                                                                                                                                   
-  Plus,                                                                                                                                                        
+  Plus,
   Eye,                                                                                                                                                         
   EyeOff,                                                                                                                                                      
   ArrowRight,                                                                                                                                                  
@@ -21,6 +20,7 @@ import {
   Search,
   X,
   Trash2,
+  User,
 } from 'lucide-react';
                                                                                                                                                               
 type Message = {                                                                                                                                               
@@ -50,6 +50,10 @@ type Conversation = {
   title: string;
   messages: Message[];
   updatedAt: number;
+  userId?: string;
+  promptIndex?: number;
+  presetPrompt?: string;
+  isPromptSession?: boolean;
 };
 
 const STARTER_MESSAGES: Message[] = [
@@ -61,25 +65,29 @@ const STARTER_MESSAGES: Message[] = [
   },
 ];
 
-const CHAT_HISTORY_STORAGE_KEY = 'generative-controls-chat-history-v1';
+const CHAT_HISTORY_STORAGE_KEY = 'generative-controls-chat-history-v3';
 
 const makeConversationId = () =>
   globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 const getConversationTitle = (messages: Message[]) => {
   const firstPrompt = messages.find((message) => message.role === 'user')?.content;
-  return firstPrompt ? truncate(firstPrompt, 42) : 'New chat';
+  return getPromptDisplayTitle(firstPrompt);
 };
 
-const createConversation = (): Conversation => ({
+const createConversation = (
+  title = 'New chat',
+  metadata: Partial<Pick<Conversation, 'userId' | 'promptIndex' | 'presetPrompt' | 'isPromptSession'>> = {}
+): Conversation => ({
   id: makeConversationId(),
-  title: 'New chat',
+  title,
   messages: STARTER_MESSAGES,
   updatedAt: Date.now(),
+  ...metadata,
 });
 
 const loadConversations = (): Conversation[] => {
-  if (typeof window === 'undefined') return [createConversation()];
+  if (typeof window === 'undefined') return [];
 
   try {
     const stored = JSON.parse(window.localStorage.getItem(CHAT_HISTORY_STORAGE_KEY) || '[]');
@@ -98,7 +106,7 @@ const loadConversations = (): Conversation[] => {
     // A malformed or inaccessible localStorage entry should not block the app.
   }
 
-  return [createConversation()];
+  return [];
 };
                                                                                                                                                               
 const API_BASE_URL = (                                                                                                                                         
@@ -113,13 +121,232 @@ const API_HEADERS = {
   'ngrok-skip-browser-warning': 'true',                                                                                                                        
 };                                                                                                                                                             
                                                                                                                                                               
-const AXIS_COLORS = ['#1D4ED8', '#6D28D9', '#0891B2', '#4F46E5', '#475569'];                                                                                   
+const AXIS_COLORS = ['#0072B2', '#D55E00', '#009E73', '#CC79A7', '#E69F00'];
+
+const STANDARD_PROMPTS = [
+  'Describe the chaotic energy of a packed night market in a bustling city.',
+  'Describe a sudden thunderstorm hitting a quiet, open field during a hot afternoon.',
+  'Write a brief, encouraging announcement message for a team channel celebrating a successful project launch.',
+  'Write a brief, urgent Slack message asking teammates to hop onto a bridge call to fix a sudden production crash.',
+];
+
+const USER_1_PICKED_PROMPT =
+  'Can you write me a message asking my professor to extend a deadline for a homework assignment.';
+
+const USER_PICKED_PROMPTS = [
+  USER_1_PICKED_PROMPT,
+  ...Array.from({ length: 11 }, () => ''),
+];
+
+const STANDARD_PROMPT_TITLES = [
+  'Night market energy',
+  'Open-field thunderstorm',
+  'Project launch announcement',
+  'Production crash bridge call',
+];
+
+const USER_PICKED_PROMPT_TITLES = [
+  'Deadline extension request',
+  ...Array.from({ length: 11 }, () => 'User-selected prompt'),
+];
+
+type PrecomputedGeneration = {
+  generatedText: string;
+  generationTimeSeconds: number;
+};
+
+const normalizePromptKey = (prompt: string) => prompt.replace(/\s+/g, ' ').trim();
+
+const PRECOMPUTED_AXIS_LABELS = new Map<string, string[]>([
+  [normalizePromptKey(STANDARD_PROMPTS[0]), ['Vivid', 'Sensational', 'Atmosphere']],
+  [normalizePromptKey(STANDARD_PROMPTS[1]), ['Vividness', 'Sensory', 'Dissonance']],
+  [normalizePromptKey(STANDARD_PROMPTS[2]), ['Formality', 'Enthusiasm', 'Tone']],
+  [normalizePromptKey(STANDARD_PROMPTS[3]), ['Urgency', 'Formality', 'Directness']],
+  [normalizePromptKey(USER_1_PICKED_PROMPT), ['Formality', 'Persuasiveness', 'Politeness']],
+]);
+
+const createPrecomputedAxes = (prompt: string): Axis[] => {
+  const labels = PRECOMPUTED_AXIS_LABELS.get(normalizePromptKey(prompt)) || [];
+  const variances = [0.34, 0.24, 0.16];
+
+  return labels.map((label, index) => ({
+    index,
+    label,
+    positive_example: `Reserved for a high-${label.toLowerCase()} example.`,
+    negative_example: `Reserved for a low-${label.toLowerCase()} example.`,
+    currentValue: 0,
+    variance: variances[index] ?? 0.1,
+    source: 'precomputed',
+  }));
+};
+
+const PRECOMPUTED_GENERATIONS = new Map<string, PrecomputedGeneration>([
+  [
+    normalizePromptKey(STANDARD_PROMPTS[0]),
+    {
+      generationTimeSeconds: 23.7,
+      generatedText: `The air here is a thick, intoxicating stew: **spicy Sichuan peppercorns** biting at the tongue, **sizzling pork belly** sending waves of steam into the humid night, and the sharp tang of **grilled charcoal**. It's a sensory riot where silence is an alien concept.
+
+Every inch of cobblestone is a stage for chaos. A **motorbike weaves through the crowd like a silver needle**, its headlight cutting a beam through the fog of smoke and shouting. Above, neon signs flicker—*Crispy Wings*, *Szechuan Hot Pot*—casting a garish purple and electric blue glow on the faces of haggling vendors and laughing tourists.
+
+A vendor's cart tips precariously as a child tugs too hard, triggering a **domino effect of laughter and scrambling feet**. Steam rises from steaming bowls of noodles, blurring the eyes of passersby. The rhythm is frantic: the clatter of metal woks, the roar of the street, the rhythmic *thump-thump-thump* of a DJ speaker hidden behind a stall, and the endless, overlapping chatter of a thousand languages colliding in a vibrant, chaotic symphony. Here, order dissolves into pure, unfiltered life.`,
+    },
+  ],
+  [
+    normalizePromptKey(STANDARD_PROMPTS[1]),
+    {
+      generationTimeSeconds: 28.51,
+      generatedText: `The air hangs heavy and still, smelling of dry dust and scorching sun as the heat waves shimmer off the golden grass. A lone cicada buzzes in an endless loop, the only sound breaking the oppressive silence.
+
+Then, the sky shudders.
+
+In a heartbeat, the azure dome fractures into a bruised purple. Within seconds, the air pressure drops so sharply it feels like a physical weight, stealing the breath from the insects' legs and freezing the sweat on your skin. The heat suddenly vanishes, replaced by a biting, electric chill.
+
+A distant rumble vibrates through the soles of your boots before the first drop falls. It isn't rain yet; it is a thousand sharp, staccato taps, each one striking the dry earth with a sound like a pistol shot. Instantly, the sky erupts into a violent, swirling vortex of black and gray.
+
+Within moments, the world dissolves into a blinding white flash, followed by a crack that echoes like a thunderclap splitting the world in two. The wind picks up with terrifying force, tearing through the tall grass with a howl that drowns out the remaining insects. Then, the heavens open.
+
+It doesn't fall gently; it pours. A relentless, blinding sheet of water crashes down, turning the open field into a churning river of mud and debris. The sound is deafening—a roaring torrent that swallows the horizon. The air, once stagnant, becomes thick with the scent of wet grass and ozone, carrying the electric tang of the storm's fury. For a brief, chaotic second, the world is no longer quiet; it is screaming.`,
+    },
+  ],
+  [
+    normalizePromptKey(STANDARD_PROMPTS[2]),
+    {
+      generationTimeSeconds: 8.36,
+      generatedText: `🎉 **Huge Congratulations!** 🚀
+
+Our recent project launch was a massive success! Thanks to your hard work, creativity, and collaboration, we've achieved something truly special.
+
+Take a moment to celebrate this win—it's a testament to what this team can do together. Let's keep the momentum going and tackle our next challenge with the same energy. You did it! 💪✨
+
+#TeamSuccess #ProjectLaunch #WellDone`,
+    },
+  ],
+  [
+    normalizePromptKey(STANDARD_PROMPTS[3]),
+    {
+      generationTimeSeconds: 5.61,
+      generatedText: `🚨 **CRITICAL: Prod Crash Detected** 🚨
+
+Our services just went down. Please hop on the bridge immediately to triage and restore stability.
+
+Link: [Insert Bridge Link]
+⏰ Start time: 2 mins ago
+
+Let's get this fixed ASAP! 🛠️`,
+    },
+  ],
+  [
+    normalizePromptKey(USER_1_PICKED_PROMPT),
+    {
+      generationTimeSeconds: 13.24,
+      generatedText: `Subject: Request for Deadline Extension – [Course Name] – [Your Name]
+
+Dear Professor [Last Name],
+
+I hope you are having a good week.
+
+I am writing to respectfully request an extension of the deadline for our upcoming assignment on [Topic/Assignment Name]. Due to [briefly state reason, e.g., an unexpected personal matter / a scheduling conflict], I will be unable to submit my work by the original due date of [Date].
+
+I am committed to ensuring high quality and would like to submit the assignment by [Proposed New Date]. Would it be possible to extend the deadline until then?
+
+Thank you for your time and understanding. I appreciate your consideration.
+
+Best regards,
+
+[Your Name]
+[Student ID Number]`,
+    },
+  ],
+]);
+
+const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+function getPromptDisplayTitle(prompt: string | undefined, fallback = 'New chat') {
+  const clean = prompt?.replace(/\s+/g, ' ').trim();
+  if (!clean) return fallback;
+
+  const standardIndex = STANDARD_PROMPTS.indexOf(clean);
+  if (standardIndex !== -1) return STANDARD_PROMPT_TITLES[standardIndex];
+
+  const userPickedIndex = USER_PICKED_PROMPTS.indexOf(clean);
+  if (userPickedIndex !== -1) return USER_PICKED_PROMPT_TITLES[userPickedIndex];
+
+  const title = clean
+    .replace(/^(write|describe)\s+(a|an|the)?\s*/i, '')
+    .replace(/[.!?]$/, '')
+    .trim();
+  const normalizedTitle = title.charAt(0).toUpperCase() + title.slice(1);
+
+  return truncate(normalizedTitle || clean, 38);
+}
+
+type UserProfile = {
+  id: string;
+  label: string;
+  prompts: string[];
+};
+
+const USER_PROFILES: UserProfile[] = Array.from({ length: 12 }, (_, index) => {
+  const label = `User ${index + 1}`;
+
+  const userPickedPrompt = USER_PICKED_PROMPTS[index];
+
+  return {
+    id: `user-${index + 1}`,
+    label,
+    prompts: userPickedPrompt
+      ? [...STANDARD_PROMPTS, userPickedPrompt]
+      : [...STANDARD_PROMPTS],
+  };
+});
+
+const DEFAULT_USER_ID = USER_PROFILES[0].id;
+const DEFAULT_PROMPT_INDEX = 0;
+
+const createInitialPromptDrafts = () =>
+  Object.fromEntries(
+    USER_PROFILES.map((profile) => [profile.id, [...profile.prompts]])
+  ) as Record<string, string[]>;
+
+const getPromptConversationId = (userId: string, promptIndex: number) =>
+  `${userId}-prompt-${promptIndex + 1}`;
+
+const getUserPrompts = (userId: string) =>
+  USER_PROFILES.find((profile) => profile.id === userId)?.prompts || USER_PROFILES[0].prompts;
+
+const createPromptConversation = (userId: string, promptIndex: number): Conversation => ({
+  id: getPromptConversationId(userId, promptIndex),
+  title: `Prompt ${promptIndex + 1}`,
+  messages: STARTER_MESSAGES,
+  updatedAt: Date.now() - promptIndex,
+  userId,
+  promptIndex,
+  presetPrompt: getUserPrompts(userId)[promptIndex],
+  isPromptSession: true,
+});
+
+const ensureUserPromptConversations = (
+  conversationList: Conversation[],
+  userId: string
+) => {
+  const existingIds = new Set(conversationList.map((conversation) => conversation.id));
+  const missingPromptConversations = getUserPrompts(userId)
+    .map((_, promptIndex) => createPromptConversation(userId, promptIndex))
+    .filter((conversation) => !existingIds.has(conversation.id));
+
+  return [...missingPromptConversations, ...conversationList];
+};
+
+const QWEN_SAFE_ALPHA_BOUND = 0.75;
+const sliderValueToAlpha = (sliderValue = 0) =>
+  (sliderValue / 50) * QWEN_SAFE_ALPHA_BOUND;
                                                                                                                                                               
 const formatAlpha = (sliderValue?: number) => {                                                                                                                
-  if (sliderValue === undefined || sliderValue === null) return '0.0α';                                                                                        
-  const alpha = (sliderValue / 50) * 3;                                                                                                                        
-  return `${alpha > 0 ? '+' : ''}${alpha.toFixed(1)}α`;                                                                                                        
-};                                                                                                                                                             
+  if (sliderValue === undefined || sliderValue === null) return '0.00α';
+  const alpha = sliderValueToAlpha(sliderValue);
+  return `${alpha > 0 ? '+' : ''}${alpha.toFixed(2)}α`;
+};
                                                                                                                                                               
 const truncate = (text: string | undefined, max = 34) => {                                                                                                     
   if (!text) return 'No example available';                                                                                                                    
@@ -216,9 +443,18 @@ const SplitMessageView = ({
 );                                                                                                                                                             
                                                                                                                                                               
 export default function App() {
-  const [conversations, setConversations] = useState<Conversation[]>(loadConversations);
-  const [activeConversationId, setActiveConversationId] = useState(
-    () => conversations[0]?.id || createConversation().id
+  const [selectedUserId, setSelectedUserId] = useState(DEFAULT_USER_ID);
+  const [selectedPromptIndex, setSelectedPromptIndex] = useState<number | null>(
+    DEFAULT_PROMPT_INDEX
+  );
+  const [userPromptDrafts, setUserPromptDrafts] = useState<Record<string, string[]>>(
+    createInitialPromptDrafts
+  );
+  const [conversations, setConversations] = useState<Conversation[]>(() =>
+    ensureUserPromptConversations(loadConversations(), DEFAULT_USER_ID)
+  );
+  const [activeConversationId, setActiveConversationId] = useState(() =>
+    getPromptConversationId(DEFAULT_USER_ID, DEFAULT_PROMPT_INDEX)
   );
   const activeConversation = conversations.find(
     (conversation) => conversation.id === activeConversationId
@@ -226,18 +462,23 @@ export default function App() {
   const messages = activeConversation?.messages || STARTER_MESSAGES;
   const [isHistoryOpen, setIsHistoryOpen] = useState(true);
   const [chatSearch, setChatSearch] = useState('');
+  const selectedUser =
+    USER_PROFILES.find((profile) => profile.id === selectedUserId) || USER_PROFILES[0];
   const normalizedChatSearch = chatSearch.trim().toLocaleLowerCase();
+  const selectedUserConversations = conversations.filter(
+    (conversation) => conversation.userId === selectedUserId
+  );
   const visibleConversations = normalizedChatSearch
-    ? conversations.filter((conversation) =>
+    ? selectedUserConversations.filter((conversation) =>
         [conversation.title, ...conversation.messages.map((message) => message.content)]
           .join(' ')
           .toLocaleLowerCase()
           .includes(normalizedChatSearch)
       )
-    : conversations;
+    : selectedUserConversations;
                                                                                                                                                               
-  const [inputText, setInputText] = useState(                                                                                                                  
-    'Write a short message to your team cancelling a meeting.'                                                                                                 
+  const [inputText, setInputText] = useState(
+    USER_PROFILES[0].prompts[DEFAULT_PROMPT_INDEX]
   );                                                                                                                                                           
                                                                                                                                                               
   const [customConcept, setCustomConcept] = useState('');                                                                                                      
@@ -280,12 +521,77 @@ export default function App() {
 
         return {
           ...conversation,
-          title: getConversationTitle(nextMessages),
+          title: conversation.isPromptSession
+            ? conversation.title
+            : getConversationTitle(nextMessages),
           messages: nextMessages,
           updatedAt: Date.now(),
         };
       })
     );
+  };
+
+  const resizePromptInput = () => {
+    window.requestAnimationFrame(() => {
+      const textarea = inputRef.current;
+      if (!textarea) return;
+
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    });
+  };
+
+  const resetSteeringState = () => {
+    setAxes([]);
+    setCloudVariations([]);
+    setShowVariations(false);
+    setShowDiff(false);
+    setErrorMessage(null);
+    generationCache.current = {};
+  };
+
+  const loadPromptChat = (userId: string, promptIndex: number) => {
+    if (isProcessing || steerLoadingId) return;
+
+    const profile = USER_PROFILES.find((candidate) => candidate.id === userId) || USER_PROFILES[0];
+    const prompts = userPromptDrafts[userId] || profile.prompts;
+    const prompt = prompts[promptIndex] || profile.prompts[promptIndex] || '';
+    const conversationId = getPromptConversationId(userId, promptIndex);
+
+    setSelectedUserId(userId);
+    setSelectedPromptIndex(promptIndex);
+    setInputText(prompt);
+    setConversations((previous) => ensureUserPromptConversations(previous, userId));
+    setActiveConversationId(conversationId);
+    setChatSearch('');
+    resetSteeringState();
+    resizePromptInput();
+  };
+
+  const handleUserChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    loadPromptChat(event.target.value, DEFAULT_PROMPT_INDEX);
+  };
+
+  const handleComposerChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    const nextText = event.target.value;
+
+    setInputText(nextText);
+
+    if (selectedPromptIndex !== null) {
+      setUserPromptDrafts((previous) => {
+        const drafts = previous[selectedUserId] || [...selectedUser.prompts];
+        const nextDrafts = [...drafts];
+        nextDrafts[selectedPromptIndex] = nextText;
+
+        return {
+          ...previous,
+          [selectedUserId]: nextDrafts,
+        };
+      });
+    }
+
+    event.target.style.height = 'auto';
+    event.target.style.height = `${event.target.scrollHeight}px`;
   };
                                                                                                                                                               
   const callBackend = async (path: string, payload: Record<string, unknown>) => {                                                                              
@@ -322,13 +628,38 @@ export default function App() {
     };                                                                                                                                                         
                                                                                                                                                               
     updateActiveMessages((prev) => [...prev, userMsg]);
+    setSelectedPromptIndex(null);
     setInputText('');                                                                                                                                          
     setIsProcessing(true);                                                                                                                                     
-    setAxes([]);                                                                                                                                               
-    setCloudVariations([]);                                                                                                                                    
+    setAxes([]);
+    setCloudVariations([]);
     setShowVariations(false);                                                                                                                                  
-    setShowDiff(false);                                                                                                                                        
+    setShowDiff(false);
     generationCache.current = {};                                                                                                                              
+
+    const precomputed = PRECOMPUTED_GENERATIONS.get(normalizePromptKey(userMsg.content));
+    if (precomputed) {
+      await wait(precomputed.generationTimeSeconds * 1000);
+
+      const precomputedAxes = createPrecomputedAxes(userMsg.content);
+      setAxes(precomputedAxes);
+      precomputedAxes.forEach((axis) => {
+        generationCache.current[`${axis.index}_0`] = precomputed.generatedText;
+      });
+
+      updateActiveMessages((prev) => [
+        ...prev,
+        {
+          id: makeConversationId(),
+          role: 'ai',
+          content: precomputed.generatedText,
+          baselineContent: precomputed.generatedText,
+        },
+      ]);
+
+      setIsProcessing(false);
+      return;
+    }
                                                                                                                                                               
     try {                                                                                                                                                      
       const data = await callBackend('/discover', {                                                                                                            
@@ -403,19 +734,24 @@ export default function App() {
   };                                                                                                                                                           
                                                                                                                                                               
   const handleSteer = async (axisIndex: number, coefficient: number) => {                                                                                      
-    const targetAxis = axes.find((a) => a.index === axisIndex);                                                                                                
-                                                                                                                                                              
-    setErrorMessage(null);                                                                                                                                     
-                                                                                                                                                              
-    setAxes((prev) =>                                                                                                                                          
-      prev.map((a) =>                                                                                                                                          
-        a.index === axisIndex                                                                                                                                  
-          ? { ...a, currentValue: coefficient }                                                                                                                
-          : { ...a, currentValue: 0 }                                                                                                                          
-      )                                                                                                                                                        
-    );                                                                                                                                                         
-                                                                                                                                                              
-    const cacheKey = `${axisIndex}_${coefficient}`;                                                                                                            
+    const targetAxis = axes.find((a) => a.index === axisIndex);
+
+    setErrorMessage(null);
+
+    setAxes((prev) =>
+      prev.map((a) =>
+        a.index === axisIndex
+          ? { ...a, currentValue: coefficient }
+          : { ...a, currentValue: 0 }
+      )
+    );
+
+    if (targetAxis?.source === 'precomputed') {
+      return;
+    }
+
+    const alphaCoefficient = sliderValueToAlpha(coefficient);
+    const cacheKey = `${axisIndex}_${alphaCoefficient.toFixed(4)}`;
     const targetMessageId = messages[messages.length - 1].id;                                                                                                  
                                                                                                                                                               
     if (generationCache.current[cacheKey] !== undefined) {                                                                                                     
@@ -458,12 +794,12 @@ export default function App() {
       const lastUserMsg =                                                                                                                                      
         [...messages].reverse().find((m) => m.role === 'user')?.content || '';                                                                                 
                                                                                                                                                               
-      const data = await callBackend('/steer', {                                                                                                               
-        prompt: lastUserMsg,                                                                                                                                   
-        axis_index: axisIndex,                                                                                                                                 
-        coefficient,                                                                                                                                           
-        max_tokens: 180,                                                                                                                                       
-      });                                                                                                                                                      
+      const data = await callBackend('/steer', {
+        prompt: lastUserMsg,
+        axis_index: axisIndex,
+        coefficient: alphaCoefficient,
+        max_tokens: 180,
+      });
                                                                                                                                                               
       generationCache.current[cacheKey] = data.generated_text;                                                                                                 
                                                                                                                                                               
@@ -498,23 +834,16 @@ export default function App() {
     setSteerLoadingId(null);                                                                                                                                   
   };                                                                                                                                                           
                                                                                                                                                               
-  const handleReset = (axisIndex: number) => {
-    if (!steerLoadingId) handleSteer(axisIndex, 0);
-  };
-
   const handleNewChat = () => {
     if (isProcessing || steerLoadingId) return;
 
-    const conversation = createConversation();
+    const conversation = createConversation('New chat', { userId: selectedUserId });
+    setSelectedPromptIndex(null);
     setConversations((previous) => [conversation, ...previous]);
     setActiveConversationId(conversation.id);
     setInputText('');
-    setAxes([]);
-    setCloudVariations([]);
-    setShowVariations(false);
-    setShowDiff(false);
-    setErrorMessage(null);
-    generationCache.current = {};
+    resetSteeringState();
+    resizePromptInput();
   };
 
   const handleSelectConversation = (conversationId: string) => {
@@ -523,14 +852,23 @@ export default function App() {
     const conversation = conversations.find((item) => item.id === conversationId);
     if (!conversation) return;
 
+    const nextUserId = conversation.userId || selectedUserId;
+    const nextPromptIndex = conversation.isPromptSession
+      ? conversation.promptIndex ?? null
+      : null;
+    const promptDraft =
+      nextPromptIndex !== null
+        ? userPromptDrafts[nextUserId]?.[nextPromptIndex] ||
+          conversation.presetPrompt ||
+          getUserPrompts(nextUserId)[nextPromptIndex]
+        : '';
+
     setActiveConversationId(conversation.id);
-    setInputText('');
-    setAxes([]);
-    setCloudVariations([]);
-    setShowVariations(false);
-    setShowDiff(false);
-    setErrorMessage(null);
-    generationCache.current = {};
+    setSelectedUserId(nextUserId);
+    setSelectedPromptIndex(nextPromptIndex);
+    setInputText(promptDraft);
+    resetSteeringState();
+    resizePromptInput();
   };
 
   const handleOpenHistorySearch = () => {
@@ -541,24 +879,42 @@ export default function App() {
   const handleDeleteConversation = (conversationId: string) => {
     if (isProcessing || steerLoadingId) return;
 
+    const targetConversation = conversations.find(
+      (conversation) => conversation.id === conversationId
+    );
+    if (targetConversation?.isPromptSession) return;
+
     const remainingConversations = conversations.filter(
       (conversation) => conversation.id !== conversationId
     );
-    const nextConversations =
-      remainingConversations.length > 0 ? remainingConversations : [createConversation()];
+    const nextConversations = ensureUserPromptConversations(
+      remainingConversations,
+      selectedUserId
+    );
 
     setConversations(nextConversations);
 
     if (conversationId === activeConversationId) {
-      const nextConversation = nextConversations[0];
+      const nextConversation = nextConversations.find(
+        (conversation) => conversation.userId === selectedUserId
+      );
+      if (!nextConversation) return;
+
+      const nextPromptIndex = nextConversation.isPromptSession
+        ? nextConversation.promptIndex ?? DEFAULT_PROMPT_INDEX
+        : null;
+      const promptDraft =
+        nextPromptIndex !== null
+          ? userPromptDrafts[selectedUserId]?.[nextPromptIndex] ||
+            nextConversation.presetPrompt ||
+            getUserPrompts(selectedUserId)[nextPromptIndex]
+          : '';
+
       setActiveConversationId(nextConversation.id);
-      setInputText('');
-      setAxes([]);
-      setCloudVariations([]);
-      setShowVariations(false);
-      setShowDiff(false);
-      setErrorMessage(null);
-      generationCache.current = {};
+      setSelectedPromptIndex(nextPromptIndex);
+      setInputText(promptDraft);
+      resetSteeringState();
+      resizePromptInput();
     }
   };
 
@@ -590,10 +946,39 @@ export default function App() {
             <PanelLeftOpen size={18} aria-hidden="true" />
           </button>
 
+          <button
+            className="collapsed-user-btn"
+            onClick={() => setIsHistoryOpen(true)}
+            aria-label={`Open user profile: ${selectedUser.label}`}
+            title={selectedUser.label}
+          >
+            <User size={17} aria-hidden="true" />
+          </button>
+
+          <div className="user-profile-block">
+            <label className="history-label user-profile-label" htmlFor="user-profile-select">
+              User profile
+            </label>
+            <select
+              id="user-profile-select"
+              className="user-profile-select"
+              value={selectedUserId}
+              onChange={handleUserChange}
+              disabled={isProcessing || steerLoadingId !== null}
+            >
+              {USER_PROFILES.map((profile) => (
+                <option key={profile.id} value={profile.id}>
+                  {profile.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <button className="new-chat-btn" onClick={handleNewChat} disabled={isProcessing || steerLoadingId !== null}>
             <Plus size={16} aria-hidden="true" />
             <span className="new-chat-label">New chat</span>
           </button>
+
 
           <button
             className="history-search-btn"
@@ -637,15 +1022,17 @@ export default function App() {
                   <MessageSquare size={15} aria-hidden="true" />
                   <span>{conversation.title}</span>
                 </button>
-                <button
-                  className="history-delete-btn"
-                  onClick={() => handleDeleteConversation(conversation.id)}
-                  aria-label={`Delete chat: ${conversation.title}`}
-                  title="Delete chat"
-                  disabled={isProcessing || steerLoadingId !== null}
-                >
-                  <Trash2 size={14} aria-hidden="true" />
-                </button>
+                {!conversation.isPromptSession && (
+                  <button
+                    className="history-delete-btn"
+                    onClick={() => handleDeleteConversation(conversation.id)}
+                    aria-label={`Delete chat: ${conversation.title}`}
+                    title="Delete chat"
+                    disabled={isProcessing || steerLoadingId !== null}
+                  >
+                    <Trash2 size={14} aria-hidden="true" />
+                  </button>
+                )}
               </div>
             ))}
             {visibleConversations.length === 0 && (
@@ -753,11 +1140,7 @@ export default function App() {
                 value={inputText}                                                                                                                              
                 aria-label="Prompt input"                                                                                                                      
                 aria-describedby="prompt-help"                                                                                                                 
-                onChange={(e) => {                                                                                                                             
-                  setInputText(e.target.value);                                                                                                                
-                  e.target.style.height = 'auto';                                                                                                              
-                  e.target.style.height = `${e.target.scrollHeight}px`;                                                                                        
-                }}                                                                                                                                             
+                onChange={handleComposerChange}
                 onKeyDown={(e) => {                                                                                                                            
                   if (e.key === 'Enter' && !e.shiftKey) {                                                                                                      
                     e.preventDefault();                                                                                                                        
@@ -816,88 +1199,64 @@ export default function App() {
             <div className="controls-scroll">                                                                                                                  
               {axes.map((axis, i) => {                                                                                                                         
                 const color = AXIS_COLORS[i % AXIS_COLORS.length];                                                                                             
-                const isActive = axis.currentValue !== 0;                                                                                                      
-                const pct = ((axis.currentValue + 50) / 100) * 100;                                                                                            
-                const neutral = '#d8dee8';                                                                                                                     
-                                                                                                                                                              
-                const trackBg =                                                                                                                                
-                  axis.currentValue === 0                                                                                                                      
-                    ? `linear-gradient(to right, ${neutral} 0%, ${neutral} 100%)`                                                                              
-                    : axis.currentValue > 0                                                                                                                    
-                      ? `linear-gradient(to right, ${neutral} 0%, ${neutral} 50%, ${color}55 50%, ${color} ${pct}%, ${neutral} ${pct}%, ${neutral} 100%)`      
-                      : `linear-gradient(to right, ${neutral} 0%, ${neutral} ${pct}%, ${color} ${pct}%, ${color}55 50%, ${neutral} 50%, ${neutral} 100%)`;     
-                                                                                                                                                              
-                return (                                                                                                                                       
+                const isActive = axis.currentValue !== 0;
+                const sliderFillStyle = {
+                  left: axis.currentValue < 0 ? `${50 + axis.currentValue}%` : '50%',
+                  width: `${Math.abs(axis.currentValue)}%`,
+                } as CSSProperties;
+
+                return (
                   <div                                                                                                                                         
                     key={axis.index}                                                                                                                           
                     className={`axis-card${isActive ? ' active' : ''}${                                                                                        
                       steerLoadingId !== null ? ' disabled' : ''                                                                                               
-                    }`}                                                                                                                                        
-                    style={isActive ? { borderColor: `${color}66` } : {}}                                                                                      
+                    }`}
+                    style={{ '--axis-color': color } as CSSProperties}
                   >                                                                                                                                            
                     <div className="axis-header">                                                                                                              
                       <div className="axis-left">                                                                                                              
                         <div                                                                                                                                   
                           className="axis-dot"                                                                                                                 
-                          style={{ background: color }}                                                                                                        
                           aria-hidden="true"                                                                                                                   
                         />                                                                                                                                     
                                                                                                                                                               
                         <div className="axis-name-wrap">                                                                                                       
                           <span className="axis-name">{axis.label}</span>                                                                                      
-                                                                                                                                                              
-                          <div className="axis-meta">                                                                                                          
-                            <span className="axis-var">                                                                                                        
-                              {(axis.variance * 100).toFixed(1)}% var                                                                                          
-                            </span>                                                                                                                            
-                                                                                                                                                              
-                            {axis.coherence !== undefined && (                                                                                                 
-                              <span className="axis-var">                                                                                                      
-                                {axis.coherence.toFixed(1)}/10 coherence                                                                                       
-                              </span>                                                                                                                          
-                            )}                                                                                                                                 
-                          </div>                                                                                                                               
                         </div>                                                                                                                                 
                       </div>                                                                                                                                   
                                                                                                                                                               
                       <div className="axis-right">                                                                                                             
                         <span                                                                                                                                  
                           className={`axis-value${isActive ? ' active' : ''}`}                                                                                 
-                          style={isActive ? { color } : {}}                                                                                                    
                         >                                                                                                                                      
-                          {formatAlpha(axis.currentValue)}                                                                                                     
+                          {formatAlpha(axis.currentValue)}
                         </span>                                                                                                                                
-                                                                                                                                                              
-                        {isActive && (                                                                                                                         
-                          <button                                                                                                                              
-                            className="reset-btn"                                                                                                              
-                            onClick={() => handleReset(axis.index)}                                                                                            
-                            aria-label={`Reset ${axis.label}`}                                                                                                 
-                          >                                                                                                                                    
-                            <RotateCcw size={11} aria-hidden="true" />                                                                                         
-                            Reset                                                                                                                              
-                          </button>                                                                                                                            
-                        )}                                                                                                                                     
-                      </div>                                                                                                                                   
+                      </div>
                     </div>                                                                                                                                     
                                                                                                                                                               
                     <div className="slider-wrap">                                                                                                              
-                      <input                                                                                                                                   
+                      <div className="slider-track-base" aria-hidden="true" />
+                      <div
+                        className={`slider-fill${axis.currentValue < 0 ? ' negative' : ''}${
+                          axis.currentValue > 0 ? ' positive' : ''
+                        }`}
+                        style={sliderFillStyle}
+                        aria-hidden="true"
+                      />
+
+                      <input
                         type="range"                                                                                                                           
                         className="slider-input"                                                                                                               
                         min="-50"                                                                                                                              
                         max="50"                                                                                                                               
-                        step="10"                                                                                                                              
+                        step="25"
                         value={axis.currentValue}                                                                                                              
                         aria-label={`Steer ${axis.label}`}                                                                                                     
                         aria-valuemin={-50}                                                                                                                    
                         aria-valuemax={50}                                                                                                                     
                         aria-valuenow={axis.currentValue}                                                                                                      
-                        aria-valuetext={`${axis.label}, ${formatAlpha(                                                                                         
-                          axis.currentValue                                                                                                                    
-                        )}`}                                                                                                                                   
-                        style={{ background: trackBg }}                                                                                                        
-                        onChange={(e) => {                                                                                                                     
+                        aria-valuetext={`${axis.label}, ${formatAlpha(axis.currentValue)}`}
+                        onChange={(e) => {
                           if (!steerLoadingId) {                                                                                                               
                             setAxes((prev) =>                                                                                                                  
                               prev.map((a) =>                                                                                                                  
@@ -943,14 +1302,14 @@ export default function App() {
                       <div className="center-mark" aria-hidden="true" />                                                                                       
                     </div>                                                                                                                                     
                                                                                                                                                               
-                    <div className="axis-labels">                                                                                                              
-                      <span className="axis-label">                                                                                                            
-                        “{truncate(axis.negative_example, 42)}”                                                                                                
-                      </span>                                                                                                                                  
-                      <span className="axis-label right">                                                                                                      
-                        “{truncate(axis.positive_example, 42)}”                                                                                                
-                      </span>                                                                                                                                  
-                    </div>                                                                                                                                     
+                    <div className="axis-labels">
+                      <span className="axis-label">
+                        {truncate(axis.negative_example, 120)}
+                      </span>
+                      <span className="axis-label right">
+                        {truncate(axis.positive_example, 120)}
+                      </span>
+                    </div>
                   </div>                                                                                                                                       
                 );                                                                                                                                             
               })}                                                                                                                                              
