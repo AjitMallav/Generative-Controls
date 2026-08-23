@@ -163,13 +163,16 @@ const USER_2_PICKED_PROMPT =
   'Write an email to my manager asking if they would be willing to write a recommendation letter for future product management roles.';
 const USER_4_PICKED_PROMPT =
   'Write an email about how my security key was shipped to the wrong address, and how I would need to retreive a new one.';
+const USER_5_PICKED_PROMPT =
+  'What are a few options for commuting from Sunnyvale, CA to Menlo Park, CA?';
 
 const USER_PICKED_PROMPTS = [
   USER_1_PICKED_PROMPT,
   USER_2_PICKED_PROMPT,
   '',
   USER_4_PICKED_PROMPT,
-  ...Array.from({ length: 8 }, () => ''),
+  USER_5_PICKED_PROMPT,
+  ...Array.from({ length: 7 }, () => ''),
 ];
 
 const STANDARD_PROMPT_TITLES = [
@@ -184,7 +187,8 @@ const USER_PICKED_PROMPT_TITLES = [
   'Recommendation letter request',
   'User-selected prompt',
   'Security key replacement',
-  ...Array.from({ length: 8 }, () => 'User-selected prompt'),
+  'Sunnyvale to Menlo Park commute',
+  ...Array.from({ length: 7 }, () => 'User-selected prompt'),
 ];
 
 type PrecomputedGeneration = {
@@ -202,6 +206,7 @@ const PRECOMPUTED_AXIS_LABELS = new Map<string, string[]>([
   [normalizePromptKey(USER_1_PICKED_PROMPT), ['Formality', 'Persuasiveness', 'Politeness']],
   [normalizePromptKey(USER_2_PICKED_PROMPT), ['Formality', 'Deference', 'Persuasion']],
   [normalizePromptKey(USER_4_PICKED_PROMPT), ['Formality', 'Detail', 'Urgency']],
+  [normalizePromptKey(USER_5_PICKED_PROMPT), ['Detail Level', 'Concise', 'Enthusiasm']],
 ]);
 
 const createPrecomputedAxes = (prompt: string): Axis[] => {
@@ -351,6 +356,20 @@ Best regards,
 [Your Name]
 [Your Account Email/Username]
 [Phone Number]`,
+    },
+  ],
+  [
+    normalizePromptKey(USER_5_PICKED_PROMPT),
+    {
+      generationTimeSeconds: 25.41,
+      generatedText: `Here are a few efficient ways to commute between Sunnyvale and Menlo Park:
+
+*   **High-Speed Train (VTA):** This is the most scenic and direct option. Take the VTA Red Line (or the newer Blue/Yellow lines depending on current service) from Sunnyvale Station directly to **Menlo Park Station**. The ride takes about 15–20 minutes, and you'll enjoy a view of the San Francisco Bay while skipping traffic.
+*   **Bike & Walk:** Both cities are bike-friendly. You can ride your e-bike from downtown Sunnyvale across the Bay Bridge to Menlo Park, then take a short walk or another quick bike ride through the park's hills to your destination.
+*   **Rideshare/Carpool:** Apps like Uber or Lyft offer a door-to-door service, though it can be pricier than public transit. Alternatively, check if your workplace or local clubs have carpools to share gas costs and avoid parking fees in Menlo Park.
+*   **Bus + Bike:** If trains are unavailable, take a bus to the nearest VTA station or the Bay Bridge area, then finish the journey by biking or taking a short taxi ride into Menlo Park.
+
+**Pro Tip:** Check local weather conditions before biking or walking, as fog or rain can make the Bay Bridge crossing tricky!`,
     },
   ],
 ]);

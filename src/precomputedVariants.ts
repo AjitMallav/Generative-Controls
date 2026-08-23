@@ -24,6 +24,9 @@ const PROMPT_6 = normalizePromptKey(
 const PROMPT_7 = normalizePromptKey(
   'Write an email about how my security key was shipped to the wrong address, and how I would need to retreive a new one.'
 );
+const PROMPT_8 = normalizePromptKey(
+  'What are a few options for commuting from Sunnyvale, CA to Menlo Park, CA?'
+);
 
 const PRECOMPUTED_STEERING_VARIANTS: Record<string, PromptVariants> = {
   [PROMPT_1]: {
@@ -996,6 +999,119 @@ Best regards,
 [Your Name]
 [Your Account Email/Username]
 [Phone Number]`,
+    },
+  },
+
+  [PROMPT_8]: {
+    'Detail Level': {
+      [-50]: `Here are a few commuting options from Sunnyvale to Menlo Park:
+
+* **Train:** Take Caltrain from Sunnyvale to Menlo Park if the schedule lines up.
+* **Drive or Rideshare:** Driving, Uber, Lyft, or carpooling can be faster door-to-door, but traffic may vary.
+* **Bike + Transit:** Bike to or from a station if you want to reduce walking or parking time.
+
+Check current transit schedules and traffic before leaving.`,
+      [-25]: `Here are a few efficient ways to commute between Sunnyvale and Menlo Park:
+
+* **Train:** Caltrain is usually the simplest public-transit option. Take it from Sunnyvale Station toward Menlo Park Station, then walk, bike, or rideshare the last leg if needed.
+* **Drive, Rideshare, or Carpool:** This can be convenient door-to-door, though commute-time traffic on US-101 or nearby routes can slow things down.
+* **Bike + Transit:** If you are comfortable biking, you can bike to the station, bring a bike on Caltrain when space allows, or bike the final stretch from Menlo Park Station.
+* **Bus + Bike:** A bus connection plus biking may work if the train schedule is inconvenient.
+
+Pro tip: Check Caltrain schedules, traffic, and bike capacity before choosing.`,
+      [25]: `Here are a few efficient ways to commute between Sunnyvale and Menlo Park, depending on whether you care most about speed, cost, or convenience:
+
+* **Caltrain:** This is usually the most straightforward public-transit option. Travel from Sunnyvale Station to Menlo Park Station, then walk, bike, or use a short rideshare for the final stretch. It avoids most traffic and is often predictable during commute hours, but you should check the current schedule and train frequency.
+* **Drive or Carpool:** Driving can be the fastest door-to-door option when traffic is light. During peak commute periods, US-101, CA-85, El Camino Real, and nearby connectors can get congested, so check live traffic before leaving. Carpooling can reduce cost and parking hassle.
+* **Rideshare:** Uber or Lyft is convenient if you do not want to park or coordinate transit, but prices may rise during peak hours.
+* **Bike + Train:** You can bike to Sunnyvale Station, take Caltrain, and then bike from Menlo Park Station to your destination. This can be a good balance of flexibility and lower cost.
+* **Bus + Bike:** If train timing is poor, a bus connection plus a short bike or rideshare leg may work, though it will usually take longer.
+
+Pro tip: Compare Caltrain departure times with traffic conditions right before you leave.`,
+      [50]: `Here are several commute options from Sunnyvale, CA to Menlo Park, CA, with tradeoffs to consider:
+
+* **Caltrain:** This is generally the best public-transit option. Start at Sunnyvale Station and take Caltrain north toward Menlo Park Station. From there, walk, bike, shuttle, or take a short rideshare to your final destination. This option is usually more predictable than driving during peak traffic, but timing depends on the current Caltrain schedule, transfer needs, and how far your destination is from the station.
+* **Drive:** Driving can be convenient and direct, especially outside rush hour. Typical routes may use US-101, CA-85, I-280, or El Camino Real depending on your exact start and end points. The downside is variable traffic, parking availability, and possible congestion during morning and evening commute windows.
+* **Carpool:** A workplace carpool or casual carpool can reduce gas, toll, and parking costs. It is a good option if your schedule is consistent and you can coordinate with coworkers traveling along the Peninsula.
+* **Rideshare or Taxi:** Uber, Lyft, or a taxi gives you door-to-door service without parking, but it is usually more expensive than transit and can be affected by surge pricing.
+* **Bike + Caltrain:** If you are comfortable biking, you can bike to Sunnyvale Station, take Caltrain, and bike from Menlo Park Station to your destination. This is often faster than walking the first or last mile, though bike space on trains may be limited.
+* **Bus + Bike or Bus + Rideshare:** If Caltrain timing is inconvenient, you can combine local buses with a short bike or rideshare segment. This is usually less direct but may be useful for destinations far from Menlo Park Station.
+
+Before choosing, check live Caltrain schedules, traffic, weather, bike capacity, parking availability, and whether your employer provides a shuttle or commuter benefits.`,
+    },
+    Concise: {
+      [-50]: `Here are a few ways to commute between Sunnyvale and Menlo Park, with some context for each option:
+
+* **Caltrain:** For many people, Caltrain is the most practical public-transit choice. You can start at Sunnyvale Station and ride north to Menlo Park Station, then complete the final part of the trip by walking, biking, shuttle, or rideshare. It can be easier than driving during rush hour, but the total time depends on the schedule and your exact destination.
+* **Driving or Carpooling:** Driving gives you flexibility and door-to-door control, especially if you need to leave at a specific time. The main drawback is traffic, which can vary significantly along the Peninsula. Carpooling can make this cheaper and may reduce parking stress.
+* **Rideshare:** Uber or Lyft can work well if you want a direct trip and do not mind paying more. It is convenient for occasional commutes but may be expensive as a daily option.
+* **Bike + Transit:** If you are comfortable biking, combining a bike with Caltrain can make the first and last mile easier. This can be especially useful if your destination is not right by Menlo Park Station.
+* **Bus + Bike:** A bus connection plus a bike or short rideshare may be an alternative if the train schedule does not fit, though it may be slower and involve more planning.
+
+I would compare Caltrain schedules against live traffic before choosing a route for the day.`,
+      [-25]: `Here are a few efficient ways to commute between Sunnyvale and Menlo Park:
+
+* **Caltrain:** Take Caltrain from Sunnyvale Station to Menlo Park Station, then walk, bike, shuttle, or rideshare to your destination.
+* **Drive or Carpool:** Driving can be convenient, but traffic can vary during peak commute times. Carpooling can help reduce cost and parking hassle.
+* **Rideshare:** Uber or Lyft offers door-to-door service, though it is usually more expensive than transit.
+* **Bike + Transit:** Bike to the train station or use a bike for the final stretch after arriving in Menlo Park.
+* **Bus + Bike:** If train timing is inconvenient, a bus plus bike or short rideshare may work.
+
+Pro tip: Check Caltrain schedules and live traffic before leaving.`,
+      [25]: `A few good commute options from Sunnyvale to Menlo Park:
+
+* **Caltrain:** Usually the simplest transit option. Ride from Sunnyvale Station to Menlo Park Station, then walk, bike, or rideshare the last leg.
+* **Drive or Carpool:** Convenient, but traffic can vary during commute hours.
+* **Rideshare:** Easy door-to-door option, but usually pricier.
+* **Bike + Transit:** Bike to or from the train station for more flexibility.
+
+Check Caltrain schedules and live traffic before choosing.`,
+      [50]: `Best options from Sunnyvale to Menlo Park:
+
+* **Caltrain:** Most practical transit option.
+* **Drive/Carpool:** Flexible, but traffic-dependent.
+* **Rideshare:** Convenient, usually more expensive.
+* **Bike + Caltrain:** Good for first/last mile.
+
+Check schedules and traffic before leaving.`,
+    },
+    Enthusiasm: {
+      [-50]: `Here are a few commuting options from Sunnyvale to Menlo Park:
+
+* **Caltrain:** Take Caltrain from Sunnyvale Station to Menlo Park Station, then walk, bike, or rideshare to your destination.
+* **Drive or Carpool:** This may be convenient depending on traffic and parking.
+* **Rideshare:** Uber or Lyft can provide door-to-door transportation at a higher cost.
+* **Bike + Transit:** Biking to or from a station can help with the first or last mile.
+* **Bus + Bike:** This may be an alternative if train timing does not work.
+
+Check schedules and traffic before deciding.`,
+      [-25]: `Here are a few practical ways to commute between Sunnyvale and Menlo Park:
+
+* **Caltrain:** A straightforward public-transit option from Sunnyvale Station to Menlo Park Station.
+* **Drive or Carpool:** Useful if you want flexibility, though traffic may affect timing.
+* **Rideshare:** Convenient for door-to-door service, but usually more expensive.
+* **Bike + Transit:** Helpful for connecting to or from the train station.
+* **Bus + Bike:** A backup option if train schedules do not line up.
+
+It is worth checking current schedules and traffic before leaving.`,
+      [25]: `Here are a few solid commute options from Sunnyvale to Menlo Park:
+
+* **Caltrain:** This is often a great choice if the schedule works for you. Ride from Sunnyvale Station to Menlo Park Station, then walk, bike, shuttle, or rideshare to your final stop.
+* **Drive or Carpool:** Convenient and flexible, especially outside peak traffic. Carpooling can make the trip cheaper and easier.
+* **Rideshare:** A simple door-to-door option when you want convenience over cost.
+* **Bike + Transit:** A nice way to make the first or last mile easier and avoid parking.
+* **Bus + Bike:** A useful backup if train timing is not ideal.
+
+Pro tip: Check Caltrain schedules and traffic before you head out so you can pick the smoothest option.`,
+      [50]: `You have several good options for getting from Sunnyvale to Menlo Park:
+
+* **Caltrain:** Probably your best public-transit bet. It is convenient, avoids most traffic, and gets you close to downtown Menlo Park.
+* **Drive or Carpool:** Great if you want flexibility. Carpooling can make the commute cheaper and less stressful.
+* **Rideshare:** Easy and direct when convenience matters most, though it can cost more.
+* **Bike + Caltrain:** A strong combo if you like active commuting. Bike to Sunnyvale Station, take the train, then bike the last stretch in Menlo Park.
+* **Bus + Bike:** A handy fallback if train timing is awkward.
+
+Quick tip: Check live traffic and Caltrain departures before leaving, then pick whichever option looks fastest that day.`,
     },
   },
 };
