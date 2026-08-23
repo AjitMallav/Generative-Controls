@@ -14,8 +14,7 @@ import {
   Plus,
   Eye,                                                                                                                                                         
   EyeOff,                                                                                                                                                      
-  ArrowRight,                                                                                                                                                  
-  Database,                                                                                                                                                    
+  Database,
   ChevronDown,
   ChevronUp,
   MessageSquare,
@@ -437,60 +436,49 @@ const DiffHighlighter = ({
   );                                                                                                                                                           
 };                                                                                                                                                             
                                                                                                                                                               
-const SplitMessageView = ({                                                                                                                                    
-  msg,                                                                                                                                                         
-  showDiff,                                                                                                                                                    
-  onToggleDiff,                                                                                                                                                
-}: {                                                                                                                                                           
-  msg: Message;                                                                                                                                                
-  showDiff: boolean;                                                                                                                                           
-  onToggleDiff: () => void;                                                                                                                                    
-}) => (                                                                                                                                                        
-  <div className="split-view">                                                                                                                                 
-    <div className="split-col split-baseline">                                                                                                                 
-      <div className="split-label">Baseline</div>                                                                                                              
-      <div className="split-body">{msg.baselineContent}</div>                                                                                                  
-    </div>                                                                                                                                                     
-                                                                                                                                                              
-    <div className="split-divider" aria-hidden="true">                                                                                                         
-      <ArrowRight size={14} />                                                                                                                                 
-    </div>                                                                                                                                                     
-                                                                                                                                                              
-    <div className="split-col split-steered">                                                                                                                  
-      <div className="split-label split-label-row">                                                                                                            
-        <span>Steered variant</span>                                                                                                                           
-                                                                                                                                                              
-        <div className="split-actions">                                                                                                                        
-          {msg.steeredAxis && (                                                                                                                                
-            <span className="axis-badge">                                                                                                                      
-              {msg.steeredAxis} {formatAlpha(msg.steeredValue)}                                                                                                
-            </span>                                                                                                                                            
-          )}                                                                                                                                                   
-                                                                                                                                                              
-          <button                                                                                                                                              
-            className="icon-btn"                                                                                                                               
-            onClick={onToggleDiff}                                                                                                                             
-            title={showDiff ? 'Hide diff' : 'Show diff'}                                                                                                       
-            aria-label={showDiff ? 'Hide changes' : 'Show changes'}                                                                                            
-          >                                                                                                                                                    
-            {showDiff ? <EyeOff size={13} /> : <Eye size={13} />}                                                                                              
-          </button>                                                                                                                                            
-                                                                                                                                                              
-          {msg.cacheHit && (                                                                                                                                   
-            <Zap size={13} className="cache-icon" aria-label="Cached response" />                                                                              
-          )}                                                                                                                                                   
-        </div>                                                                                                                                                 
-      </div>                                                                                                                                                   
-                                                                                                                                                              
-      {showDiff ? (                                                                                                                                            
-        <DiffHighlighter baseline={msg.baselineContent || ''} steered={msg.content} />                                                                         
-      ) : (                                                                                                                                                    
-        <div className="split-body split-body-primary">{msg.content}</div>                                                                                     
-      )}                                                                                                                                                       
-    </div>                                                                                                                                                     
-  </div>                                                                                                                                                       
-);                                                                                                                                                             
-                                                                                                                                                              
+const SteeredMessageView = ({
+  msg,
+  showDiff,
+  onToggleDiff,
+}: {
+  msg: Message;
+  showDiff: boolean;
+  onToggleDiff: () => void;
+}) => (
+  <div className="steered-view">
+    <div className="split-label split-label-row">
+      <span>{showDiff ? 'Changes from baseline' : 'Steered variant'}</span>
+
+      <div className="split-actions">
+        {msg.steeredAxis && (
+          <span className="axis-badge">
+            {msg.steeredAxis} {formatAlpha(msg.steeredValue)}
+          </span>
+        )}
+
+        <button
+          className="icon-btn"
+          onClick={onToggleDiff}
+          title={showDiff ? 'Hide differences' : 'Show differences from baseline'}
+          aria-label={showDiff ? 'Hide differences' : 'Show differences from baseline'}
+        >
+          {showDiff ? <EyeOff size={13} /> : <Eye size={13} />}
+        </button>
+
+        {msg.cacheHit && (
+          <Zap size={13} className="cache-icon" aria-label="Cached response" />
+        )}
+      </div>
+    </div>
+
+    {showDiff ? (
+      <DiffHighlighter baseline={msg.baselineContent || ''} steered={msg.content} />
+    ) : (
+      <div className="split-body split-body-primary">{msg.content}</div>
+    )}
+  </div>
+);
+
 export default function App() {
   const [selectedUserId, setSelectedUserId] = useState(DEFAULT_USER_ID);
   const [selectedPromptIndex, setSelectedPromptIndex] = useState<number | null>(
@@ -1181,11 +1169,11 @@ export default function App() {
                       <div className="ai-content">                                                                                                             
                         <div className={`ai-text${msg.isSteering ? ' loading' : ''}`}>                                                                         
                           {msg.baselineContent && msg.content !== msg.baselineContent ? (                                                                      
-                            <SplitMessageView                                                                                                                  
+                            <SteeredMessageView
                               msg={msg}                                                                                                                        
                               showDiff={showDiff}                                                                                                              
                               onToggleDiff={() => setShowDiff((p) => !p)}                                                                                      
-                            />                                                                                                                                 
+                            />
                           ) : (                                                                                                                                
                             <div className="ai-plain-text">{msg.content}</div>                                                                                 
                           )}                                                                                                                                   
