@@ -1,5 +1,9 @@
 import * as Diff from 'diff';                                                                                                                                  
 import './App.css';
+import {
+  getPrecomputedPoleExamples,
+  getPrecomputedSteeredText,
+} from './precomputedVariants';
 import { useState, useRef, useEffect, type ChangeEvent, type CSSProperties } from 'react';
 import {                                                                                                                                                       
   Send,                                                                                                                                                        
@@ -174,15 +178,21 @@ const createPrecomputedAxes = (prompt: string): Axis[] => {
   const labels = PRECOMPUTED_AXIS_LABELS.get(normalizePromptKey(prompt)) || [];
   const variances = [0.34, 0.24, 0.16];
 
-  return labels.map((label, index) => ({
-    index,
-    label,
-    positive_example: `Reserved for a high-${label.toLowerCase()} example.`,
-    negative_example: `Reserved for a low-${label.toLowerCase()} example.`,
-    currentValue: 0,
-    variance: variances[index] ?? 0.1,
-    source: 'precomputed',
-  }));
+  return labels.map((label, index) => {
+    const poleExamples = getPrecomputedPoleExamples(prompt, label);
+
+    return {
+      index,
+      label,
+      positive_example:
+        poleExamples.positive || `Reserved for a high-${label.toLowerCase()} example.`,
+      negative_example:
+        poleExamples.negative || `Reserved for a low-${label.toLowerCase()} example.`,
+      currentValue: 0,
+      variance: variances[index] ?? 0.1,
+      source: 'precomputed',
+    };
+  });
 };
 
 const PRECOMPUTED_GENERATIONS = new Map<string, PrecomputedGeneration>([
@@ -785,15 +795,58 @@ export default function App() {
       )
     );
 
+    const targetMessageId = messages[messages.length - 1]?.id;
+    const targetMessage = messages[messages.length - 1];
+
     if (targetAxis?.source === 'precomputed') {
+      const lastUserMsg =
+        [...messages].reverse().find((m) => m.role === 'user')?.content || '';
+      const baselineText =
+        targetMessage?.baselineContent || generationCache.current[`${axisIndex}_0`] || '';
+      const steeredText = getPrecomputedSteeredText(
+        lastUserMsg,
+        targetAxis.label,
+        coefficient,
+        baselineText
+      );
+
+      if (!targetMessageId || !steeredText) {
+        setErrorMessage('No static steering output is available for this slider value.');
+        return;
+      }
+
+      updateActiveMessages((prev) =>
+        prev.map((m) =>
+          m.id === targetMessageId
+            ? {
+                ...m,
+                content: steeredText,
+                isSteering: false,
+                cacheHit: true,
+                steeredAxis: targetAxis.label,
+                steeredValue: coefficient,
+              }
+            : m
+        )
+      );
+
+      window.setTimeout(() => {
+        updateActiveMessages((curr) =>
+          curr.map((m) =>
+            m.id === targetMessageId ? { ...m, cacheHit: false } : m
+          )
+        );
+      }, 700);
+
       return;
     }
 
     const alphaCoefficient = sliderValueToAlpha(coefficient);
     const cacheKey = `${axisIndex}_${alphaCoefficient.toFixed(4)}`;
-    const targetMessageId = messages[messages.length - 1].id;                                                                                                  
+
+    if (!targetMessageId) return;
                                                                                                                                                               
-    if (generationCache.current[cacheKey] !== undefined) {                                                                                                     
+    if (generationCache.current[cacheKey] !== undefined) {
       const cachedContent = generationCache.current[cacheKey];                                                                                                 
                                                                                                                                                               
       updateActiveMessages((prev) => {
