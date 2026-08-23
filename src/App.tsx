@@ -132,10 +132,13 @@ const STANDARD_PROMPTS = [
 
 const USER_1_PICKED_PROMPT =
   'Can you write me a message asking my professor to extend a deadline for a homework assignment.';
+const USER_2_PICKED_PROMPT =
+  'Write an email to my manager asking if they would be willing to write a recommendation letter for future product management roles.';
 
 const USER_PICKED_PROMPTS = [
   USER_1_PICKED_PROMPT,
-  ...Array.from({ length: 11 }, () => ''),
+  USER_2_PICKED_PROMPT,
+  ...Array.from({ length: 10 }, () => ''),
 ];
 
 const STANDARD_PROMPT_TITLES = [
@@ -147,7 +150,8 @@ const STANDARD_PROMPT_TITLES = [
 
 const USER_PICKED_PROMPT_TITLES = [
   'Deadline extension request',
-  ...Array.from({ length: 11 }, () => 'User-selected prompt'),
+  'Recommendation letter request',
+  ...Array.from({ length: 10 }, () => 'User-selected prompt'),
 ];
 
 type PrecomputedGeneration = {
@@ -163,6 +167,7 @@ const PRECOMPUTED_AXIS_LABELS = new Map<string, string[]>([
   [normalizePromptKey(STANDARD_PROMPTS[2]), ['Formality', 'Enthusiasm', 'Tone']],
   [normalizePromptKey(STANDARD_PROMPTS[3]), ['Urgency', 'Formality', 'Directness']],
   [normalizePromptKey(USER_1_PICKED_PROMPT), ['Formality', 'Persuasiveness', 'Politeness']],
+  [normalizePromptKey(USER_2_PICKED_PROMPT), ['Formality', 'Deference', 'Persuasion']],
 ]);
 
 const createPrecomputedAxes = (prompt: string): Axis[] => {
@@ -256,6 +261,29 @@ Best regards,
 
 [Your Name]
 [Student ID Number]`,
+    },
+  ],
+  [
+    normalizePromptKey(USER_2_PICKED_PROMPT),
+    {
+      generationTimeSeconds: 14.61,
+      generatedText: `Subject: Request for Reference – Product Management Roles
+
+Hi [Manager's Name],
+
+I hope you're having a great week.
+
+As I look ahead to exploring new opportunities in product management, I'd love to leverage your support. Given our work together on [mention specific project or achievement], I believe your perspective would add significant value to my application.
+
+Would you be open to writing a formal recommendation letter for future product leadership roles? If so, I'd be happy to share my resume and a draft of potential talking points to help ensure it highlights the key skills we developed during our time working together.
+
+No pressure at all if you're too busy right now, but I'd really appreciate your thoughts if you might be able to take this on.
+
+Thanks so much for your continued mentorship!
+
+Best regards,
+
+[Your Name]`,
     },
   ],
 ]);
