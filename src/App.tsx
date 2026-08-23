@@ -323,6 +323,20 @@ Best regards,
 
 const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
+const MIN_STATIC_STEERING_DELAY_MS = 5000;
+const MAX_STATIC_STEERING_DELAY_MS = 8000;
+const STATIC_STEERING_FULL_DELAY_CHARS = 2200;
+
+const getStaticSteeringDelayMs = (generatedText: string) => {
+  const normalizedLength = generatedText.replace(/\s+/g, ' ').trim().length;
+  const lengthRatio = Math.min(normalizedLength / STATIC_STEERING_FULL_DELAY_CHARS, 1);
+
+  return Math.round(
+    MIN_STATIC_STEERING_DELAY_MS +
+      lengthRatio * (MAX_STATIC_STEERING_DELAY_MS - MIN_STATIC_STEERING_DELAY_MS)
+  );
+};
+
 function getPromptDisplayTitle(prompt: string | undefined, fallback = 'New chat') {
   const clean = prompt?.replace(/\s+/g, ' ').trim();
   if (!clean) return fallback;
@@ -857,6 +871,18 @@ export default function App() {
         return;
       }
 
+      setSteerLoadingId(targetMessageId);
+
+      updateActiveMessages((prev) =>
+        prev.map((m) =>
+          m.id === targetMessageId
+            ? { ...m, isSteering: true, cacheHit: false }
+            : m
+        )
+      );
+
+      await wait(getStaticSteeringDelayMs(steeredText));
+
       updateActiveMessages((prev) =>
         prev.map((m) =>
           m.id === targetMessageId
@@ -871,6 +897,8 @@ export default function App() {
             : m
         )
       );
+
+      setSteerLoadingId(null);
 
       window.setTimeout(() => {
         updateActiveMessages((curr) =>
@@ -1236,7 +1264,7 @@ export default function App() {
                         {steerLoadingId === msg.id && (                                                                                                        
                           <div className="status-line" role="status" aria-live="polite">                                                                       
                             <RefreshCw size={12} className="spin" aria-hidden="true" />                                                                        
-                            Applying PCA steering vector…                                                                                                      
+                            Generating steered variant…
                           </div>                                                                                                                               
                         )}                                                                                                                                     
                       </div>                                                                                                                                   
