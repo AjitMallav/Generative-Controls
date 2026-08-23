@@ -161,11 +161,15 @@ const USER_1_PICKED_PROMPT =
   'Can you write me a message asking my professor to extend a deadline for a homework assignment.';
 const USER_2_PICKED_PROMPT =
   'Write an email to my manager asking if they would be willing to write a recommendation letter for future product management roles.';
+const USER_4_PICKED_PROMPT =
+  'Write an email about how my security key was shipped to the wrong address, and how I would need to retreive a new one.';
 
 const USER_PICKED_PROMPTS = [
   USER_1_PICKED_PROMPT,
   USER_2_PICKED_PROMPT,
-  ...Array.from({ length: 10 }, () => ''),
+  '',
+  USER_4_PICKED_PROMPT,
+  ...Array.from({ length: 8 }, () => ''),
 ];
 
 const STANDARD_PROMPT_TITLES = [
@@ -178,7 +182,9 @@ const STANDARD_PROMPT_TITLES = [
 const USER_PICKED_PROMPT_TITLES = [
   'Deadline extension request',
   'Recommendation letter request',
-  ...Array.from({ length: 10 }, () => 'User-selected prompt'),
+  'User-selected prompt',
+  'Security key replacement',
+  ...Array.from({ length: 8 }, () => 'User-selected prompt'),
 ];
 
 type PrecomputedGeneration = {
@@ -195,6 +201,7 @@ const PRECOMPUTED_AXIS_LABELS = new Map<string, string[]>([
   [normalizePromptKey(STANDARD_PROMPTS[3]), ['Urgency', 'Formality', 'Directness']],
   [normalizePromptKey(USER_1_PICKED_PROMPT), ['Formality', 'Persuasiveness', 'Politeness']],
   [normalizePromptKey(USER_2_PICKED_PROMPT), ['Formality', 'Deference', 'Persuasion']],
+  [normalizePromptKey(USER_4_PICKED_PROMPT), ['Formality', 'Detail', 'Urgency']],
 ]);
 
 const createPrecomputedAxes = (prompt: string): Axis[] => {
@@ -317,6 +324,33 @@ Thanks so much for your continued mentorship!
 Best regards,
 
 [Your Name]`,
+    },
+  ],
+  [
+    normalizePromptKey(USER_4_PICKED_PROMPT),
+    {
+      generationTimeSeconds: 19.43,
+      generatedText: `Subject: Issue with Security Key Delivery – Request for Replacement
+
+Dear Support Team,
+
+I am writing to report that my recent security key order appears to have been shipped to the wrong address. After checking my order details, I realized the package was sent to a different location than my registered shipping address.
+
+Could you please assist me with the following:
+
+1. Confirm whether the key was lost in transit or shipped to an incorrect recipient.
+2. Provide instructions for retrieving the package if possible or issuing a replacement unit.
+3. Let me know whether any additional verification steps or fees are required for the replacement.
+
+My order number is [Insert Order Number], and I placed the order on [Insert Date].
+
+Please let me know what information you need from me to expedite this process. I apologize for any inconvenience this may cause.
+
+Best regards,
+
+[Your Name]
+[Your Account Email/Username]
+[Phone Number]`,
     },
   ],
 ]);

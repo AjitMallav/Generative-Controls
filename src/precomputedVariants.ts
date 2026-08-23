@@ -21,6 +21,9 @@ const PROMPT_5 = normalizePromptKey(
 const PROMPT_6 = normalizePromptKey(
   'Write an email to my manager asking if they would be willing to write a recommendation letter for future product management roles.'
 );
+const PROMPT_7 = normalizePromptKey(
+  'Write an email about how my security key was shipped to the wrong address, and how I would need to retreive a new one.'
+);
 
 const PRECOMPUTED_STEERING_VARIANTS: Record<string, PromptVariants> = {
   [PROMPT_1]: {
@@ -779,6 +782,220 @@ Thanks so much for your continued mentorship!
 Best regards,
 
 [Your Name]`,
+    },
+  },
+  [PROMPT_7]: {
+    Formality: {
+      [-50]: `Subject: Security Key Sent to Wrong Address
+
+Hi Support Team,
+
+My security key was shipped to the wrong address. Could you help me get a replacement or tell me how to retrieve it?
+
+My order number is [Insert Order Number], and I placed the order on [Insert Date].
+
+Please let me know what you need from me.
+
+Thanks,
+
+[Your Name]
+[Your Account Email/Username]
+[Phone Number]`,
+      [-25]: `Subject: Security Key Delivery Issue
+
+Hello Support Team,
+
+I hope you're doing well.
+
+I recently noticed that my security key order was shipped to the wrong address. After checking my order details, it looks like the package was sent somewhere other than my registered shipping address.
+
+Could you please help me confirm what happened and let me know how I can retrieve the key or receive a replacement?
+
+My order number is [Insert Order Number], and I placed the order on [Insert Date].
+
+Thank you for your help.
+
+Best,
+
+[Your Name]
+[Your Account Email/Username]
+[Phone Number]`,
+      [25]: `Subject: Request for Assistance with Incorrect Security Key Delivery
+
+Dear Support Team,
+
+I hope you are doing well.
+
+I am writing to report that my recent security key order appears to have been shipped to the wrong address. After reviewing my order details, I realized that the package was sent to a location different from my registered shipping address.
+
+Could you please assist me by confirming whether the key was delivered incorrectly, advising whether it can be retrieved, and explaining the process for receiving a replacement unit if needed?
+
+My order number is [Insert Order Number], and I placed the order on [Insert Date].
+
+Please let me know if you need any additional information from me to move this forward. Thank you for your time and assistance.
+
+Best regards,
+
+[Your Name]
+[Your Account Email/Username]
+[Phone Number]`,
+      [50]: `Subject: Formal Request for Replacement Security Key Due to Incorrect Delivery Address
+
+Dear Support Team,
+
+I hope this message finds you well.
+
+I am writing to formally report an issue with the delivery of my recent security key order. Upon reviewing the order and shipping information, I found that the package appears to have been sent to an address other than my registered shipping address.
+
+I would appreciate your assistance in determining whether the key can be retrieved or whether a replacement unit should be issued. If a replacement is required, please let me know what verification steps, documentation, or fees may be necessary to complete the process.
+
+My order number is [Insert Order Number], and the order was placed on [Insert Date].
+
+Thank you very much for your attention to this matter. I appreciate your assistance and look forward to your guidance on the next steps.
+
+Sincerely,
+
+[Your Name]
+[Your Account Email/Username]
+[Phone Number]`,
+    },
+    Detail: {
+      [-50]: `Subject: Security Key Delivery Issue
+
+Dear Support Team,
+
+My security key was shipped to the wrong address. I need help retrieving it or getting a replacement sent to my correct address.
+
+Order number: [Insert Order Number]
+Order date: [Insert Date]
+
+Please let me know what I should do next.
+
+Best regards,
+
+[Your Name]`,
+      [-25]: `Subject: Security Key Delivered to Wrong Address
+
+Dear Support Team,
+
+I am writing because my security key order appears to have been shipped to the wrong address. I checked my order details and the delivery location does not match my registered shipping address.
+
+Could you please confirm whether the package can be retrieved or whether I should request a replacement key?
+
+My order number is [Insert Order Number], and I placed the order on [Insert Date].
+
+Thank you,
+
+[Your Name]
+[Your Account Email/Username]`,
+      [25]: `Subject: Issue with Security Key Delivery – Request for Replacement
+
+Dear Support Team,
+
+I am writing to report that my recent security key order appears to have been shipped to the wrong address. After checking my order confirmation and tracking details, I realized that the delivery location does not match my registered shipping address.
+
+Could you please help me with the following:
+
+1. Confirm whether the package was shipped to an incorrect address or marked delivered in error.
+2. Let me know whether the original package can be retrieved or should be considered unavailable.
+3. Provide instructions for receiving a replacement security key.
+4. Confirm whether any identity verification, documentation, or replacement fee is required.
+
+My order number is [Insert Order Number], and I placed the order on [Insert Date]. The correct shipping address on my account should be [Insert Correct Address].
+
+Please let me know if there is any additional information I can provide to help resolve this.
+
+Best regards,
+
+[Your Name]
+[Your Account Email/Username]
+[Phone Number]`,
+      [50]: `Subject: Detailed Request for Assistance with Misdelivered Security Key
+
+Dear Support Team,
+
+I am writing to request assistance with a security key order that appears to have been shipped to the wrong address. After reviewing my order confirmation, account shipping information, and delivery notification, I noticed that the package was sent to or marked delivered at a location that does not match my registered shipping address.
+
+Because this item is used for account security, I would like to resolve the issue carefully and make sure the misplaced key cannot create any access or security concerns. Could you please help me confirm the status of the shipment and advise on the appropriate next steps?
+
+For reference:
+
+- Order number: [Insert Order Number]
+- Order date: [Insert Date]
+- Tracking number: [Insert Tracking Number]
+- Correct shipping address: [Insert Correct Address]
+- Incorrect delivery address or location shown: [Insert Incorrect Address or Delivery Location]
+
+Specifically, I would appreciate guidance on whether the original package can be retrieved, whether the shipped key should be deactivated or invalidated, and whether a replacement security key can be issued. Please also let me know if you need additional verification, documentation, or payment information to process the replacement.
+
+Thank you for your help. I appreciate your assistance in resolving this delivery issue as soon as possible.
+
+Best regards,
+
+[Your Name]
+[Your Account Email/Username]
+[Phone Number]`,
+    },
+    Urgency: {
+      [-50]: `Subject: Security Key Delivery Question
+
+Dear Support Team,
+
+I noticed that my security key order may have been shipped to the wrong address. When you have a chance, could you please let me know whether it can be retrieved or whether I should request a replacement?
+
+My order number is [Insert Order Number], and I placed the order on [Insert Date].
+
+Thank you,
+
+[Your Name]`,
+      [-25]: `Subject: Security Key Shipped to Wrong Address
+
+Dear Support Team,
+
+I am writing because my security key appears to have been shipped to the wrong address. Could you please help me check the shipment and let me know the next steps for retrieving it or getting a replacement?
+
+My order number is [Insert Order Number], and I placed the order on [Insert Date].
+
+I would appreciate your help when possible.
+
+Best regards,
+
+[Your Name]
+[Your Account Email/Username]`,
+      [25]: `Subject: Urgent: Security Key Shipped to Wrong Address – Replacement Needed
+
+Dear Support Team,
+
+I am writing to report an urgent issue with my recent security key order. The package appears to have been shipped to an address that does not match my registered shipping address.
+
+Because this key is tied to account access and security, I would appreciate prompt assistance confirming whether the package can be retrieved or whether a replacement key can be issued right away. Please also let me know if any verification steps are needed to protect my account while this is resolved.
+
+My order number is [Insert Order Number], and I placed the order on [Insert Date].
+
+Please let me know the fastest way to proceed.
+
+Best regards,
+
+[Your Name]
+[Your Account Email/Username]
+[Phone Number]`,
+      [50]: `Subject: Urgent Action Required: Security Key Misdelivered – Replacement Needed Immediately
+
+Dear Support Team,
+
+I am contacting you urgently because my security key order appears to have been shipped to the wrong address. After checking my order and delivery details, I confirmed that the package was sent to a location other than my registered shipping address.
+
+This is time-sensitive because the key is required for secure account access, and a misplaced security key may create an account security concern. Please help me immediately confirm whether the original key can be retrieved, whether it should be deactivated or invalidated, and how quickly a replacement can be shipped to my correct address.
+
+My order number is [Insert Order Number], and I placed the order on [Insert Date]. My correct shipping address is [Insert Correct Address].
+
+Please let me know what verification you need from me so we can resolve this as quickly as possible.
+
+Best regards,
+
+[Your Name]
+[Your Account Email/Username]
+[Phone Number]`,
     },
   },
 };
