@@ -366,6 +366,17 @@ const ensureUserPromptConversations = (
   return [...missingPromptConversations, ...conversationList];
 };
 
+const orderConversationsForSidebar = (conversationList: Conversation[]) => {
+  const promptSessions = conversationList
+    .filter((conversation) => conversation.isPromptSession)
+    .sort((a, b) => (a.promptIndex ?? 0) - (b.promptIndex ?? 0));
+  const otherConversations = conversationList
+    .filter((conversation) => !conversation.isPromptSession)
+    .sort((a, b) => b.updatedAt - a.updatedAt);
+
+  return [...otherConversations, ...promptSessions];
+};
+
 const QWEN_SAFE_ALPHA_BOUND = 0.75;
 const sliderValueToAlpha = (sliderValue = 0) =>
   (sliderValue / 50) * QWEN_SAFE_ALPHA_BOUND;
@@ -493,8 +504,8 @@ export default function App() {
   const selectedUser =
     USER_PROFILES.find((profile) => profile.id === selectedUserId) || USER_PROFILES[0];
   const normalizedChatSearch = chatSearch.trim().toLocaleLowerCase();
-  const selectedUserConversations = conversations.filter(
-    (conversation) => conversation.userId === selectedUserId
+  const selectedUserConversations = orderConversationsForSidebar(
+    conversations.filter((conversation) => conversation.userId === selectedUserId)
   );
   const visibleConversations = normalizedChatSearch
     ? selectedUserConversations.filter((conversation) =>
