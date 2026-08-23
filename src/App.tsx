@@ -68,7 +68,10 @@ const STARTER_MESSAGES: Message[] = [
   },
 ];
 
-const CHAT_HISTORY_STORAGE_KEY = 'generative-controls-chat-history-v3';
+const APP_RUN_ID = __APP_RUN_ID__;
+const CHAT_HISTORY_STORAGE_PREFIX = 'generative-controls-chat-history-v4';
+const LEGACY_CHAT_HISTORY_STORAGE_KEYS = ['generative-controls-chat-history-v3'];
+const CHAT_HISTORY_STORAGE_KEY = `${CHAT_HISTORY_STORAGE_PREFIX}:${APP_RUN_ID}`;
 
 const makeConversationId = () =>
   globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -89,8 +92,29 @@ const createConversation = (
   ...metadata,
 });
 
+const cleanupStaleConversationStorage = () => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    for (let index = window.localStorage.length - 1; index >= 0; index -= 1) {
+      const key = window.localStorage.key(index);
+      const isPreviousRunKey =
+        key?.startsWith(CHAT_HISTORY_STORAGE_PREFIX) && key !== CHAT_HISTORY_STORAGE_KEY;
+      const isLegacyKey = key ? LEGACY_CHAT_HISTORY_STORAGE_KEYS.includes(key) : false;
+
+      if (key && (isPreviousRunKey || isLegacyKey)) {
+        window.localStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // Storage cleanup is best-effort only.
+  }
+};
+
 const loadConversations = (): Conversation[] => {
   if (typeof window === 'undefined') return [];
+
+  cleanupStaleConversationStorage();
 
   try {
     const stored = JSON.parse(window.localStorage.getItem(CHAT_HISTORY_STORAGE_KEY) || '[]');
@@ -534,6 +558,36 @@ export default function App() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const historySearchRef = useRef<HTMLInputElement>(null);
                                                                                                                                                               
+  useEffect(() => {
+    if (!import.meta.env.DEV) return undefined;
+
+    let isMounted = true;
+
+    const checkRunId = async () => {
+      try {
+        const response = await fetch('/__app_run_id', { cache: 'no-store' });
+        if (!response.ok) return;
+
+        const data = (await response.json()) as { runId?: string };
+
+        if (isMounted && data.runId && data.runId !== APP_RUN_ID) {
+          window.localStorage.removeItem(CHAT_HISTORY_STORAGE_KEY);
+          window.location.reload();
+        }
+      } catch {
+        // The dev server may be temporarily unavailable while it restarts.
+      }
+    };
+
+    checkRunId();
+    const intervalId = window.setInterval(checkRunId, 1500);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
