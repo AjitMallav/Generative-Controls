@@ -162,6 +162,8 @@ const USER_1_PICKED_PROMPT =
   'Can you write me a message asking my professor to extend a deadline for a homework assignment.';
 const USER_2_PICKED_PROMPT =
   'Write an email to my manager asking if they would be willing to write a recommendation letter for future product management roles.';
+const USER_3_PICKED_PROMPT =
+  'Talking with my family in korean, How do you say “I heard she got into a study abroad program with good accommodations” in korean';
 const USER_4_PICKED_PROMPT =
   'Write an email about how my security key was shipped to the wrong address, and how I would need to retreive a new one.';
 const USER_5_PICKED_PROMPT =
@@ -170,7 +172,7 @@ const USER_5_PICKED_PROMPT =
 const USER_PICKED_PROMPTS = [
   USER_1_PICKED_PROMPT,
   USER_2_PICKED_PROMPT,
-  '',
+  USER_3_PICKED_PROMPT,
   USER_4_PICKED_PROMPT,
   USER_5_PICKED_PROMPT,
   ...Array.from({ length: 7 }, () => ''),
@@ -186,7 +188,7 @@ const STANDARD_PROMPT_TITLES = [
 const USER_PICKED_PROMPT_TITLES = [
   'Deadline extension request',
   'Recommendation letter request',
-  'User-selected prompt',
+  'Korean family translation',
   'Security key replacement',
   'Sunnyvale to Menlo Park commute',
   ...Array.from({ length: 7 }, () => 'User-selected prompt'),
@@ -206,6 +208,7 @@ const PRECOMPUTED_AXIS_LABELS = new Map<string, string[]>([
   [normalizePromptKey(STANDARD_PROMPTS[3]), ['Urgency', 'Formality', 'Directness']],
   [normalizePromptKey(USER_1_PICKED_PROMPT), ['Formality', 'Persuasiveness', 'Politeness']],
   [normalizePromptKey(USER_2_PICKED_PROMPT), ['Formality', 'Deference', 'Persuasion']],
+  [normalizePromptKey(USER_3_PICKED_PROMPT), ['Formality', 'Naturalness', 'Detail']],
   [normalizePromptKey(USER_4_PICKED_PROMPT), ['Formality', 'Detail', 'Urgency']],
   [normalizePromptKey(USER_5_PICKED_PROMPT), ['Detail Level', 'Concise', 'Enthusiasm']],
 ]);
@@ -330,6 +333,19 @@ Thanks so much for your continued mentorship!
 Best regards,
 
 [Your Name]`,
+    },
+  ],
+  [
+    normalizePromptKey(USER_3_PICKED_PROMPT),
+    {
+      generationTimeSeconds: 9.12,
+      generatedText: `"그녀가 좋은 숙소가 있는 해외연수 프로그램에 들어갔다는 소식을 들었습니다."
+
+**Breakdown of the phrase:**
+*   **그녀가** (Geunyeoga): She (subject marker)
+*   **좋은 숙소가 있는** (Joheun soko-ga inneun): Having good accommodations (good = 좋은, accommodation = 숙소, having = 있는)
+*   **해외연수 프로그램에** (Hwaeye-yeonsu progeureume): Into an overseas study-abroad program
+*   **들었습니다** (Deul-eotseumnida): Heard (polite past tense)`,
     },
   ],
   [

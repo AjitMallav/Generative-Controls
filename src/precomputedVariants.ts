@@ -27,6 +27,9 @@ const PROMPT_7 = normalizePromptKey(
 const PROMPT_8 = normalizePromptKey(
   'What are a few options for commuting from Sunnyvale, CA to Menlo Park, CA?'
 );
+const PROMPT_9 = normalizePromptKey(
+  'Talking with my family in korean, How do you say “I heard she got into a study abroad program with good accommodations” in korean'
+);
 
 const PRECOMPUTED_STEERING_VARIANTS: Record<string, PromptVariants> = {
   [PROMPT_1]: {
@@ -787,6 +790,94 @@ Best regards,
 [Your Name]`,
     },
   },
+  [PROMPT_9]: {
+    Formality: {
+      [-50]: `가족한테 말하는 거면 이렇게 하면 자연스러워요:
+
+"걔가 숙소 괜찮은 유학 프로그램에 붙었다고 들었어."
+
+좀 더 편하게는 "걔 숙소 좋은 유학 프로그램에 붙었다더라"라고 해도 돼요.`,
+      [-25]: `가족에게 말할 때는 이렇게 자연스럽게 말할 수 있어요:
+
+"그 사람이 숙소가 괜찮은 유학 프로그램에 합격했다고 들었어."
+
+조금 더 캐주얼하게는 "걔 숙소 좋은 유학 프로그램에 붙었다고 들었어"라고도 할 수 있습니다.`,
+      [25]: `조금 더 공손하게 말하면 다음과 같습니다:
+
+"그분이 좋은 숙소가 제공되는 해외 연수 프로그램에 선발되었다고 들었습니다."
+
+가족에게 말하는 상황이라면 너무 딱딱하게 들릴 수 있으므로, 자연스럽게는 "그 사람이 숙소가 좋은 유학 프로그램에 합격했다고 들었어요"라고도 할 수 있습니다.`,
+      [50]: `공식적이고 정중한 표현은 다음과 같습니다:
+
+"그분이 우수한 숙소 지원이 제공되는 해외 연수 프로그램에 선발되었다는 소식을 들었습니다."
+
+**표현 설명:**
+* **그분이**: "she"를 높여서 가리키는 표현
+* **우수한 숙소 지원이 제공되는**: 좋은 숙소가 마련되어 있음을 격식 있게 표현
+* **해외 연수 프로그램에 선발되었다**: study abroad program에 들어갔다는 의미를 공식적으로 표현
+* **소식을 들었습니다**: "I heard"의 정중한 표현`,
+    },
+    Naturalness: {
+      [-50]: `"그녀가 좋은 숙소가 있는 해외연수 프로그램에 들어갔다는 소식을 들었습니다."
+
+This is a fairly direct translation. It is understandable, but it sounds a little formal and translated rather than like something you would casually say to family.`,
+      [-25]: `"그녀가 좋은 숙소가 있는 해외 연수 프로그램에 들어갔다고 들었어요."
+
+This is still close to the English structure, but it sounds a bit smoother than the most literal version.`,
+      [25]: `가족한테는 이렇게 말하는 게 더 자연스러워요:
+
+"그 사람이 숙소 지원 좋은 유학 프로그램에 붙었다고 들었어."
+
+Here, **붙었다고 들었어** sounds more conversational than saying "들었습니다."`,
+      [50]: `가족끼리 자연스럽게 말하면:
+
+"걔 숙소 지원 괜찮은 유학 프로그램에 붙었다더라."
+
+또는 조금 덜 캐주얼하게:
+
+"그 사람이 숙소 좋은 유학 프로그램에 합격했다더라."
+
+These sound more like everyday spoken Korean than a direct translation from English.`,
+    },
+    Detail: {
+      [-50]: `"걔가 숙소 괜찮은 유학 프로그램에 붙었다고 들었어."`,
+      [-25]: `You can say:
+
+"그 사람이 숙소가 괜찮은 유학 프로그램에 합격했다고 들었어."
+
+For family, this sounds natural and not too formal.`,
+      [25]: `A natural way to say it to family is:
+
+"그 사람이 숙소 지원이 좋은 유학 프로그램에 합격했다고 들었어."
+
+If you want it more casual, you can say:
+
+"걔 숙소 좋은 유학 프로그램에 붙었다더라."
+
+**Notes:**
+* **숙소 지원이 좋은** = with good accommodations / good housing support
+* **유학 프로그램** = study abroad program
+* **합격했다 / 붙었다** = got accepted; **붙었다** is more casual`,
+      [50]: `For talking with family, the most natural translation is:
+
+"걔 숙소 지원 괜찮은 유학 프로그램에 붙었다더라."
+
+A slightly more neutral version is:
+
+"그 사람이 숙소 지원이 좋은 유학 프로그램에 합격했다고 들었어."
+
+A more formal version is:
+
+"그분이 좋은 숙소가 제공되는 해외 연수 프로그램에 선발되었다고 들었습니다."
+
+**Breakdown:**
+* **걔 / 그 사람이 / 그분이**: casual, neutral, and formal ways to say "she"
+* **숙소 지원이 좋은**: literally "has good housing support," which is more natural than a word-for-word translation of "good accommodations"
+* **유학 프로그램**: study abroad program
+* **붙었다 / 합격했다 / 선발되었다**: casual, neutral, and formal ways to say "got into" or "was selected for"
+* **들었어 / 들었습니다**: casual versus formal "I heard"`,
+    },
+  },
   [PROMPT_7]: {
     Formality: {
       [-50]: `Subject: Security Key Sent to Wrong Address
@@ -1273,6 +1364,53 @@ ${phraseFor(formality, 'Thanks,', 'Thanks so much,', 'Best regards,', 'Best rega
 [Your Name]`;
 };
 
+const renderKoreanTranslationCombination = (coefficients: Record<string, number>) => {
+  const formality = coefficientFor(coefficients, 'Formality');
+  const naturalness = coefficientFor(coefficients, 'Naturalness');
+  const detail = coefficientFor(coefficients, 'Detail');
+  const casual = formality < 0 || naturalness > 0;
+  const formal = formality > 0;
+  const subject = phraseFor(formality, '걔', '그 사람', '그녀가', '그분이', '그분이');
+  const program = phraseFor(
+    naturalness,
+    '좋은 숙소가 있는 해외연수 프로그램',
+    '숙소가 괜찮은 해외 연수 프로그램',
+    '좋은 숙소가 있는 해외연수 프로그램',
+    '숙소 지원이 좋은 유학 프로그램',
+    '숙소 지원 괜찮은 유학 프로그램'
+  );
+  const verb = casual
+    ? phraseFor(formality, '붙었다더라', '합격했다고 들었어', '들었다고 했어', '합격했다고 들었어요', '선발되었다고 들었습니다')
+    : phraseFor(formality, '붙었다고 들었어', '합격했다고 들었어', '들어갔다는 소식을 들었습니다', '선발되었다고 들었습니다', '선발되었다는 소식을 들었습니다');
+  const translation = `"${subject} ${program}에 ${verb}."`;
+
+  if (detail <= -50) return translation;
+
+  const toneNote = phraseFor(
+    formality,
+    'This is casual and good for talking with family.',
+    'This is natural for family conversation without sounding too slangy.',
+    'This is understandable, though a bit formal for family conversation.',
+    'This is polite and a little formal.',
+    'This is quite formal and best for written or respectful contexts.'
+  );
+
+  if (detail < 0) {
+    return `${translation}
+
+${toneNote}`;
+  }
+
+  return `${translation}
+
+${toneNote}
+
+${detail >= 50 ? 'Alternative options:\n* Casual: "걔 숙소 지원 괜찮은 유학 프로그램에 붙었다더라."\n* Neutral: "그 사람이 숙소 지원이 좋은 유학 프로그램에 합격했다고 들었어."\n* Formal: "그분이 좋은 숙소가 제공되는 해외 연수 프로그램에 선발되었다고 들었습니다."\n\n' : ''}Breakdown:
+* **${subject}**: ${formal ? 'a more formal way to refer to her' : casual ? 'a casual way to refer to her in family conversation' : 'the subject, "she"'}
+* **${program}**: study abroad program with good accommodations or housing support
+* **${verb}**: ${formal ? 'a polite/formal way to say "I heard she got in"' : 'a conversational way to say "I heard she got in"'}`;
+};
+
 const renderSecurityKeyCombination = (coefficients: Record<string, number>) => {
   const formality = coefficientFor(coefficients, 'Formality');
   const detail = coefficientFor(coefficients, 'Detail');
@@ -1321,6 +1459,7 @@ const COMPOSITE_RENDERERS: Record<string, (coefficients: Record<string, number>)
   [PROMPT_4]: renderProdCrashCombination,
   [PROMPT_5]: renderProfessorEmailCombination,
   [PROMPT_6]: renderManagerEmailCombination,
+  [PROMPT_9]: renderKoreanTranslationCombination,
   [PROMPT_7]: renderSecurityKeyCombination,
   [PROMPT_8]: renderCommuteCombination,
 };
