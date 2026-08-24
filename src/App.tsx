@@ -1,8 +1,8 @@
 import * as Diff from 'diff';                                                                                                                                  
 import './App.css';
 import {
+  getPrecomputedCombinedSteeredText,
   getPrecomputedPoleExamples,
-  getPrecomputedSteeredText,
 } from './precomputedVariants';
 import { useState, useRef, useEffect, type ChangeEvent, type CSSProperties } from 'react';
 import {                                                                                                                                                       
@@ -33,9 +33,10 @@ type Message = {
   isSteering?: boolean;                                                                                                                                        
   cacheHit?: boolean;                                                                                                                                          
   baselineContent?: string;                                                                                                                                    
-  steeredAxis?: string;                                                                                                                                        
-  steeredValue?: number;                                                                                                                                       
-};                                                                                                                                                             
+  steeredAxis?: string;
+  steeredValue?: number;
+  steeredSummary?: string;
+};
                                                                                                                                                               
 type Axis = {
   index: number;                                                                                                                                               
@@ -486,6 +487,12 @@ const formatAlpha = (sliderValue?: number) => {
   const alpha = sliderValueToAlpha(sliderValue);
   return `${alpha > 0 ? '+' : ''}${alpha.toFixed(2)}α`;
 };
+
+const formatSteeringSummary = (axes: Axis[]) =>
+  axes
+    .filter((axis) => axis.currentValue !== 0)
+    .map((axis) => `${axis.label} ${formatAlpha(axis.currentValue)}`)
+    .join(' · ');
                                                                                                                                                               
 const truncate = (text: string | undefined, max = 34) => {                                                                                                     
   if (!text) return 'No example available';                                                                                                                    
@@ -541,9 +548,9 @@ const SteeredMessageView = ({
       <span>{showDiff ? 'Changes from baseline' : 'Steered variant'}</span>
 
       <div className="split-actions">
-        {msg.steeredAxis && (
+        {(msg.steeredSummary || msg.steeredAxis) && (
           <span className="axis-badge">
-            {msg.steeredAxis} {formatAlpha(msg.steeredValue)}
+            {msg.steeredSummary || `${msg.steeredAxis} ${formatAlpha(msg.steeredValue)}`}
           </span>
         )}
 
@@ -896,13 +903,15 @@ export default function App() {
 
     setErrorMessage(null);
 
-    setAxes((prev) =>
-      prev.map((a) =>
-        a.index === axisIndex
-          ? { ...a, currentValue: coefficient }
-          : { ...a, currentValue: 0 }
-      )
-    );
+    const nextAxes = axes.map((a) => {
+      if (a.index === axisIndex) return { ...a, currentValue: coefficient };
+
+      return targetAxis?.source === 'precomputed'
+        ? a
+        : { ...a, currentValue: 0 };
+    });
+
+    setAxes(nextAxes);
 
     const targetMessageId = messages[messages.length - 1]?.id;
     const targetMessage = messages[messages.length - 1];
@@ -912,12 +921,15 @@ export default function App() {
         [...messages].reverse().find((m) => m.role === 'user')?.content || '';
       const baselineText =
         targetMessage?.baselineContent || generationCache.current[`${axisIndex}_0`] || '';
-      const steeredText = getPrecomputedSteeredText(
+      const steeredText = getPrecomputedCombinedSteeredText(
         lastUserMsg,
-        targetAxis.label,
-        coefficient,
+        nextAxes.map(({ label, currentValue }) => ({
+          label,
+          coefficient: currentValue,
+        })),
         baselineText
       );
+      const steeringSummary = formatSteeringSummary(nextAxes);
 
       if (!targetMessageId || !steeredText) {
         setErrorMessage('No static steering output is available for this slider value.');
@@ -946,6 +958,7 @@ export default function App() {
                 cacheHit: true,
                 steeredAxis: targetAxis.label,
                 steeredValue: coefficient,
+                steeredSummary: steeringSummary,
               }
             : m
         )
@@ -979,9 +992,10 @@ export default function App() {
           content: cachedContent,                                                                                                                              
           isSteering: false,                                                                                                                                   
           cacheHit: true,                                                                                                                                      
-          steeredAxis: targetAxis?.label,                                                                                                                      
-          steeredValue: coefficient,                                                                                                                           
-        };                                                                                                                                                     
+          steeredAxis: targetAxis?.label,
+          steeredValue: coefficient,
+          steeredSummary: undefined,
+        };
         return newMsgs;                                                                                                                                        
       });                                                                                                                                                      
                                                                                                                                                               
@@ -1027,9 +1041,10 @@ export default function App() {
             ...newMsgs[idx],                                                                                                                                   
             content: data.generated_text,                                                                                                                      
             isSteering: false,                                                                                                                                 
-            steeredAxis: targetAxis?.label,                                                                                                                    
-            steeredValue: coefficient,                                                                                                                         
-          };                                                                                                                                                   
+            steeredAxis: targetAxis?.label,
+            steeredValue: coefficient,
+            steeredSummary: undefined,
+          };
         }                                                                                                                                                      
                                                                                                                                                               
         return newMsgs;                                                                                                                                        

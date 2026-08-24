@@ -1146,6 +1146,185 @@ export function getPrecomputedPoleExamples(
   };
 }
 
+export type AxisCoefficient = {
+  label: string;
+  coefficient: number;
+};
+
+const coefficientMap = (axisCoefficients: AxisCoefficient[]) =>
+  Object.fromEntries(
+    axisCoefficients.map(({ label, coefficient }) => [label.toLowerCase(), coefficient])
+  ) as Record<string, number>;
+
+const coefficientFor = (coefficients: Record<string, number>, label: string) =>
+  coefficients[label.toLowerCase()] ?? 0;
+
+const phraseFor = (
+  value: number,
+  negative: string,
+  mildNegative: string,
+  neutral: string,
+  mildPositive: string,
+  positive: string
+) => {
+  if (value <= -50) return negative;
+  if (value < 0) return mildNegative;
+  if (value >= 50) return positive;
+  if (value > 0) return mildPositive;
+  return neutral;
+};
+
+const renderNightMarketCombination = (coefficients: Record<string, number>) => {
+  const vivid = coefficientFor(coefficients, 'Vivid');
+  const sensational = coefficientFor(coefficients, 'Sensational');
+  const atmosphere = coefficientFor(coefficients, 'Atmosphere');
+
+  return `The night market ${phraseFor(atmosphere, 'feels like a busy street after dark', 'settles into a lively evening scene', 'swells into a crowded pocket of city life', 'glows like its own restless little world', 'burns with a feverish, dreamlike atmosphere')}. The air carries ${phraseFor(vivid, 'the plain smells of peppercorns, pork belly, and charcoal', 'spice, sizzling pork belly, and grilled charcoal', 'Sichuan peppercorns, pork belly steam, and charcoal smoke', 'Sichuan peppercorns prickling the tongue, glossy pork belly steam, and sharp charcoal smoke', 'Sichuan peppercorns sparking on the tongue, pork belly hissing on metal, and charcoal smoke curling through the humid night')}.
+
+A motorbike ${phraseFor(sensational, 'moves carefully through the crowd', 'threads through the crowd', 'weaves through smoke and shouting', 'slices through the crowd with its headlight cutting smoke and steam', 'needles through the crowd, horn barking and headlight flashing through shouting faces')}. Neon signs for wings and hot pot flicker above vendors, tourists, bargaining hands, and bowls lifted from steaming carts.
+
+A child tugs at a vendor's cart, setting off ${phraseFor(sensational, 'a brief laugh and a few quick steps aside', 'laughter and shifting feet', 'a domino effect of laughter and scrambling feet', 'spilled napkins, startled shouts, and scrambling feet', 'a cascade of rattling bowls, flailing hands, laughter, and bodies surging out of the way')}. Woks clatter, music thumps behind a stall, and voices overlap until the market ${phraseFor(atmosphere, 'feels busy and alive', 'moves with steady nighttime energy', 'becomes a vibrant, chaotic symphony', 'dissolves into bright, unfiltered life', 'seems to breathe in clouds of heat, hunger, and pulsing life')}.`;
+};
+
+const renderThunderstormCombination = (coefficients: Record<string, number>) => {
+  const vividness = coefficientFor(coefficients, 'Vividness');
+  const sensory = coefficientFor(coefficients, 'Sensory');
+  const dissonance = coefficientFor(coefficients, 'Dissonance');
+
+  return `The afternoon field begins ${phraseFor(dissonance, 'hot and quiet beneath a slowly darkening sky', 'still and bright before the weather shifts', 'heavy and silent under the scorching sun', 'almost too calm, as if the air is waiting to break', 'sealed in impossible quiet just before the world contradicts itself')}. The grass ${phraseFor(vividness, 'lies dry under the sun', 'shimmers faintly in the heat', 'glows gold as heat waves ripple above it', 'seems to blur at the edges in the rising heat', 'appears to melt at the edges beneath the sun-struck air')}, while a cicada buzzes through the stillness.
+
+Then the sky changes. Blue fades into purple-gray, the pressure drops, and ${phraseFor(sensory, 'cool air moves across the field', 'the smell of dust gives way to wet grass', 'sweat chills on your skin as ozone sharpens the air', 'an electric chill presses against your chest and tastes faintly metallic', 'a biting electric cold tightens your chest and leaves a metallic taste on the tongue')}.
+
+Thunder rolls through the ground before the first drops strike. They hit ${phraseFor(vividness, 'the dry earth', 'the dusty soil in hard taps', 'like staccato taps kicking dust into the air', 'like thrown gravel bursting dust upward', 'like pistol shots bursting dust into tiny clouds')}. Lightning flashes, wind bends the grass, and rain crashes down until the quiet field ${phraseFor(dissonance, 'becomes stormy', 'gives way to the storm', 'is replaced by a roaring sheet of water', 'turns hostile and unrecognizable', 'becomes its opposite: a violent rupture where calm had been moments before')}.`;
+};
+
+const renderAnnouncementCombination = (coefficients: Record<string, number>) => {
+  const formality = coefficientFor(coefficients, 'Formality');
+  const enthusiasm = coefficientFor(coefficients, 'Enthusiasm');
+  const tone = coefficientFor(coefficients, 'Tone');
+  const heading = phraseFor(enthusiasm, '**Project Launch Update**', '🎉 **Congratulations!**', '🎉 **Huge Congratulations!** 🚀', '🎉 **Huge Congratulations, Team!** 🚀', '🎉 **HUGE Congratulations, Team!** 🚀✨');
+
+  return `${heading}
+
+${phraseFor(formality, 'The launch was a huge success', 'Our project launch was a big success', 'Our recent project launch was a massive success', 'Our recent project launch was a significant success', 'Our recent project launch was a significant and meaningful accomplishment')}! Thanks to your hard work, creativity, and collaboration, ${phraseFor(enthusiasm, 'we achieved a strong result', 'we pulled off a strong result together', 'we have achieved something truly special', 'we achieved something truly special and worth celebrating', 'you absolutely crushed an incredible milestone worth celebrating')}.
+
+${phraseFor(formality, 'Take a moment to celebrate this win', 'Please take a moment to appreciate this win', 'Take a moment to celebrate this win', 'Please take a moment to recognize and celebrate this accomplishment', 'Please take a moment to recognize this accomplishment and the effort that made it possible')}—${phraseFor(tone, 'you all earned it', 'it reflects what the team can do together', 'it is a testament to what this team can do together', 'it is a meaningful reminder of what this team can do when we support each other', 'it reflects not only what this team can deliver, but how we show up together')}. ${phraseFor(tone, 'Let’s keep the momentum going into the next one.', 'Let’s keep the momentum going for the next challenge.', 'Let’s keep the momentum going and tackle our next challenge with the same energy.', 'Let’s carry this momentum and bring the same supportive spirit to our next challenge.', 'Let’s carry that momentum, confidence, and shared pride into the next challenge.')}
+
+#TeamSuccess #ProjectLaunch #WellDone`;
+};
+
+const renderProdCrashCombination = (coefficients: Record<string, number>) => {
+  const urgency = coefficientFor(coefficients, 'Urgency');
+  const formality = coefficientFor(coefficients, 'Formality');
+  const directness = coefficientFor(coefficients, 'Directness');
+
+  return `${phraseFor(urgency, '**Prod Issue Detected**', '🚨 **Prod Crash Detected** 🚨', '🚨 **CRITICAL: Prod Crash Detected** 🚨', '🚨 **URGENT: Critical Prod Crash Detected** 🚨', '🚨 **URGENT: PROD CRASH IN PROGRESS** 🚨')}
+
+${phraseFor(directness, 'It looks like our services may be down.', 'Our services just went down.', 'Our services just went down.', 'Services are down.', 'Prod is down.')} ${phraseFor(formality, 'Can everyone hop on the bridge so we can figure out what happened and get things stable?', 'Please jump on the bridge so we can triage and get things stable again.', 'Please hop on the bridge immediately to triage and restore stability.', 'Please join the bridge immediately to triage the incident and restore system stability.', 'Please join the bridge immediately so we can coordinate triage efforts and restore service stability.')}${urgency > 0 ? ' This needs attention now.' : ''}
+
+Link: [Insert Bridge Link]
+⏰ Start time: 2 mins ago
+
+${phraseFor(directness, 'Let’s try to get this fixed ASAP. 🛠️', 'Let’s get this fixed ASAP. 🛠️', 'Let’s get this fixed ASAP! 🛠️', 'Fix ASAP. 🛠️', 'Join now. Fix ASAP. 🛠️')}`;
+};
+
+const renderProfessorEmailCombination = (coefficients: Record<string, number>) => {
+  const formality = coefficientFor(coefficients, 'Formality');
+  const persuasion = coefficientFor(coefficients, 'Persuasiveness');
+  const politeness = coefficientFor(coefficients, 'Politeness');
+
+  return `Subject: ${phraseFor(formality, 'Extension Request for [Course Name]', 'Request for Assignment Extension – [Course Name]', 'Request for Deadline Extension – [Course Name] – [Your Name]', 'Formal Request for Deadline Extension – [Course Name] – [Your Name]', 'Formal Request for Extension of Assignment Deadline – [Course Name] – [Your Name]')}
+
+${phraseFor(formality, 'Hi', 'Hello', 'Dear', 'Dear', 'Dear')} Professor [Last Name],
+
+${phraseFor(politeness, 'I hope you’re doing well.', 'I hope you are having a good week.', 'I hope you are having a good week.', 'I apologize for the inconvenience, and I hope you are having a good week.', 'I apologize for the inconvenience, and I hope this message finds you well.')}
+
+I am writing to ${phraseFor(politeness, 'ask for', 'request', 'respectfully request', 'kindly and respectfully request', 'kindly and respectfully ask whether it might be possible to receive')} an extension for our upcoming assignment on [Topic/Assignment Name]. Due to [briefly state reason], I will be unable to submit my work by the original due date of [Date].
+
+${phraseFor(persuasion, 'I would like to submit the assignment by [Proposed New Date].', 'I would like to submit the assignment by [Proposed New Date] if possible.', 'I am committed to ensuring high quality and would like to submit the assignment by [Proposed New Date].', 'I want to ensure that I submit work that reflects my best effort and understanding of the material, rather than rushing an incomplete assignment. I would therefore like to submit it by [Proposed New Date].', 'I care about doing well in your course and want to submit work that accurately reflects my understanding of the material. If granted an extension until [Proposed New Date], I would be able to complete the assignment more carefully and thoroughly.')} Would that be possible?
+
+${phraseFor(politeness, 'Thank you.', 'Thank you for your time.', 'Thank you for your time and understanding. I appreciate your consideration.', 'Thank you very much for your time and understanding. I truly appreciate your consideration.', 'Thank you very much for your time, understanding, and consideration. I sincerely appreciate it.')}
+
+${phraseFor(formality, 'Best,', 'Best regards,', 'Best regards,', 'Best regards,', 'Respectfully,')}
+
+[Your Name]
+[Student ID Number]`;
+};
+
+const renderManagerEmailCombination = (coefficients: Record<string, number>) => {
+  const formality = coefficientFor(coefficients, 'Formality');
+  const deference = coefficientFor(coefficients, 'Deference');
+  const persuasion = coefficientFor(coefficients, 'Persuasion');
+
+  return `Subject: ${phraseFor(formality, 'Recommendation Letter Request', 'Request for Recommendation – Product Management Roles', 'Request for Reference – Product Management Roles', 'Request for Recommendation Letter – Product Management Roles', 'Formal Request for Recommendation Letter – Product Management Roles')}
+
+${phraseFor(formality, 'Hi', 'Hi', 'Hi', 'Dear', 'Dear')} [Manager's Name],
+
+I hope ${phraseFor(formality, "you're", "you're", "you're", 'you are', 'this message finds you')} having a great week.
+
+As I look ahead to exploring new opportunities in product management, ${phraseFor(deference, 'I would like your support', "I'd like your support", "I'd love to leverage your support", "I'd be very grateful to have your support", 'I would be extremely grateful for your support')}. Given our work together on [mention specific project or achievement], I believe your perspective would add ${persuasion > 0 ? 'significant ' : ''}value to my application${persuasion > 0 ? ' by speaking directly to my product judgment, collaboration, and cross-functional work' : ''}.
+
+${phraseFor(deference, 'Can you write', 'Would you be open to writing', 'Would you be open to writing', 'If you would be comfortable doing so, would you be willing to write', 'If your schedule allows, would you be willing to write')} a formal recommendation letter for future product leadership roles? ${phraseFor(persuasion, 'I can share my resume and talking points.', "I'd be happy to share my resume and a draft of talking points.", "I'd be happy to share my resume and a draft of potential talking points to help ensure it highlights the key skills we developed during our time working together.", "I'd be happy to share my resume and a draft of potential talking points to make the process easy and to help ensure it highlights the key strengths we developed together.", "A recommendation from you would be especially meaningful because you have seen my contributions directly. I'd be happy to share my resume and talking points to make the process as easy as possible.")}
+
+${phraseFor(deference, 'Let me know if you can take this on.', "No pressure if you're too busy right now, but I'd appreciate your thoughts.", "No pressure at all if you're too busy right now, but I'd really appreciate your thoughts if you might be able to take this on.", "I completely understand if you're too busy right now, but I would really appreciate your thoughts if you might be able to take this on.", 'I completely understand if your schedule does not allow for this, so no pressure at all. I would sincerely appreciate your consideration.')}
+
+${phraseFor(formality, 'Thanks,', 'Thanks so much,', 'Best regards,', 'Best regards,', 'Best regards,')}
+
+[Your Name]`;
+};
+
+const renderSecurityKeyCombination = (coefficients: Record<string, number>) => {
+  const formality = coefficientFor(coefficients, 'Formality');
+  const detail = coefficientFor(coefficients, 'Detail');
+  const urgency = coefficientFor(coefficients, 'Urgency');
+
+  return `Subject: ${phraseFor(urgency, 'Security Key Delivery Question', 'Security Key Shipped to Wrong Address', 'Issue with Security Key Delivery – Request for Replacement', 'Urgent: Security Key Shipped to Wrong Address – Replacement Needed', 'Urgent Action Required: Security Key Misdelivered – Replacement Needed Immediately')}
+
+${phraseFor(formality, 'Hi', 'Hello', 'Dear', 'Dear', 'Dear')} Support Team,
+
+I am writing to report that my recent security key order appears to have been shipped to the wrong address. After checking my order details, I realized the package was sent to a different location than my registered shipping address.${urgency > 0 ? ' Because this key is tied to account access and security, I would appreciate prompt assistance.' : ''}
+
+${phraseFor(detail, 'Could you please let me know whether it can be retrieved or whether I should request a replacement?', 'Could you please confirm whether the package can be retrieved or whether a replacement key should be issued?', 'Could you please confirm whether the key was lost in transit or shipped to an incorrect recipient, provide instructions for retrieving it or issuing a replacement, and let me know whether any verification steps or fees are required?', 'Could you please confirm whether the package was shipped incorrectly, whether the original key can be retrieved, what steps are required for a replacement, and whether any identity verification, documentation, or fee is needed?', 'Could you please confirm the shipment status, whether the original key should be retrieved or deactivated, whether a replacement can be issued, what verification or documentation is required, and how quickly a replacement can be shipped to my correct address?')}
+
+My order number is [Insert Order Number], and I placed the order on [Insert Date].${detail >= 50 ? ' The correct shipping address on my account should be [Insert Correct Address], and the tracking number is [Insert Tracking Number].' : ''}
+
+${phraseFor(urgency, 'Please let me know what I should do next.', 'I would appreciate your help when possible.', 'Please let me know what information you need from me to expedite this process.', 'Please let me know the fastest way to proceed.', 'Please let me know what verification you need from me so we can resolve this as quickly as possible.')}
+
+${phraseFor(formality, 'Thanks,', 'Thank you,', 'Best regards,', 'Best regards,', 'Sincerely,')}
+
+[Your Name]
+[Your Account Email/Username]
+[Phone Number]`;
+};
+
+const renderCommuteCombination = (coefficients: Record<string, number>) => {
+  const detail = coefficientFor(coefficients, 'Detail Level');
+  const concise = coefficientFor(coefficients, 'Concise');
+  const enthusiasm = coefficientFor(coefficients, 'Enthusiasm');
+  const compact = concise > 0;
+  const extraDetail = detail > 0 && concise < 50;
+
+  return `${phraseFor(enthusiasm, 'Here are a few commuting options from Sunnyvale to Menlo Park:', 'Here are a few practical ways to commute between Sunnyvale and Menlo Park:', 'Here are a few efficient ways to commute between Sunnyvale and Menlo Park:', 'Here are a few solid commute options from Sunnyvale to Menlo Park:', 'You have several good options for getting from Sunnyvale to Menlo Park:')}
+
+* **Caltrain:** ${compact ? 'Usually the simplest transit option.' : 'Usually the most practical public-transit option. Ride from Sunnyvale Station to Menlo Park Station, then walk, bike, shuttle, or rideshare to your final destination.'}${extraDetail ? ' It is more predictable than driving during peak traffic, but timing depends on the current schedule and station distance.' : ''}
+* **Drive or Carpool:** ${compact ? 'Flexible, but traffic-dependent.' : 'Driving can be convenient and direct, especially outside rush hour. Carpooling can reduce gas and parking costs.'}${extraDetail ? ' Check US-101, CA-85, I-280, or El Camino Real depending on your exact route.' : ''}
+* **Rideshare:** ${compact ? 'Convenient, usually more expensive.' : 'Uber or Lyft offers door-to-door service, though it is usually more expensive than transit and may be affected by surge pricing.'}
+* **Bike + Caltrain:** ${compact ? 'Good for the first or last mile.' : 'Bike to Sunnyvale Station, take Caltrain, and bike from Menlo Park Station to your destination for more flexibility.'}
+${concise <= -50 || detail > 0 ? '* **Bus + Bike:** A backup option if train timing is inconvenient, though it may take longer and require more planning.\n' : ''}
+${phraseFor(enthusiasm, 'Check schedules and traffic before deciding.', 'It is worth checking current schedules and traffic before leaving.', 'Pro tip: Check Caltrain schedules and live traffic before choosing.', 'Quick tip: check live traffic and Caltrain departures before leaving so you can pick the smoothest option.', 'Quick tip: check live traffic, Caltrain departures, weather, and bike capacity, then pick whichever option looks fastest that day.')}`;
+};
+
+const COMPOSITE_RENDERERS: Record<string, (coefficients: Record<string, number>) => string> = {
+  [PROMPT_1]: renderNightMarketCombination,
+  [PROMPT_2]: renderThunderstormCombination,
+  [PROMPT_3]: renderAnnouncementCombination,
+  [PROMPT_4]: renderProdCrashCombination,
+  [PROMPT_5]: renderProfessorEmailCombination,
+  [PROMPT_6]: renderManagerEmailCombination,
+  [PROMPT_7]: renderSecurityKeyCombination,
+  [PROMPT_8]: renderCommuteCombination,
+};
+
 export function getPrecomputedSteeredText(
   prompt: string,
   axisLabel: string | undefined,
@@ -1160,4 +1339,24 @@ export function getPrecomputedSteeredText(
       coefficient
     ] ?? null
   );
+}
+
+export function getPrecomputedCombinedSteeredText(
+  prompt: string,
+  axisCoefficients: AxisCoefficient[],
+  baselineText: string
+) {
+  const activeAxes = axisCoefficients.filter(({ coefficient }) => coefficient !== 0);
+
+  if (activeAxes.length === 0) return baselineText;
+
+  if (activeAxes.length === 1) {
+    const [{ label, coefficient }] = activeAxes;
+    return getPrecomputedSteeredText(prompt, label, coefficient, baselineText);
+  }
+
+  const renderer = COMPOSITE_RENDERERS[normalizePromptKey(prompt)];
+  if (!renderer) return null;
+
+  return renderer(coefficientMap(activeAxes));
 }
