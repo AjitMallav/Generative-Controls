@@ -1172,7 +1172,7 @@ export default function App() {
         >
           <div className="history-brand">
             <div className="history-brand-mark" aria-hidden="true">P</div>
-            <span>Generative Controls</span>
+            <span>DimSteer</span>
             <button
               className="history-close-btn"
               onClick={() => setIsHistoryOpen(false)}
@@ -1296,7 +1296,7 @@ export default function App() {
             </div>                                                                                                                                             
                                                                                                                                                               
             <div className="header-main">                                                                                                                      
-              <span className="header-title">Generative Controls</span>                                                                                        
+              <span className="header-title">DimSteer</span>                                                                                        
               <span className="header-sub">                                                                                                                    
                 Prompt-local PCA activation steering                                                                                                           
               </span>                                                                                                                                          
