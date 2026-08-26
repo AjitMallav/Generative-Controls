@@ -516,6 +516,32 @@ const truncate = (text: string | undefined, max = 34) => {
   return clean.length > max ? `${clean.slice(0, max)}…` : clean;                                                                                               
 };                                                                                                                                                             
                                                                                                                                                               
+const DimSteerGlyph = () => (
+  <svg className="mark-glyph" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path
+      d="M12 4.2c1.85 0 3.36 1.1 3.96 2.68 1.68-.22 3.36.66 4.17 2.14.82 1.5.62 3.35-.5 4.63 1 1.38 1.05 3.26.1 4.66-.95 1.38-2.72 2.06-4.36 1.7A4.15 4.15 0 0 1 12 21.8a4.15 4.15 0 0 1-3.37-1.79c-1.64.36-3.41-.32-4.36-1.7-.95-1.4-.9-3.28.1-4.66-1.12-1.28-1.32-3.13-.5-4.63.81-1.48 2.49-2.36 4.17-2.14A4.16 4.16 0 0 1 12 4.2Z"
+      stroke="currentColor"
+      strokeWidth="1.55"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M8.45 9.6 12 7.55l3.55 2.05v4.1L12 15.75 8.45 13.7V9.6Z"
+      stroke="currentColor"
+      strokeWidth="1.55"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M12 7.55v4.1m0 4.1v3.25m-3.55-5.3L12 11.65l3.55 2.05"
+      stroke="currentColor"
+      strokeWidth="1.55"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 const DiffHighlighter = ({                                                                                                                                     
   baseline,                                                                                                                                                    
   steered,                                                                                                                                                     
@@ -1292,14 +1318,11 @@ export default function App() {
         <main className="chat-pane" aria-label="PCA steering chat interface">
           <header className="chat-header">
             <div className="logo" aria-hidden="true">
-              PCA                                                                                                                                              
+              <DimSteerGlyph />
             </div>                                                                                                                                             
                                                                                                                                                               
             <div className="header-main">                                                                                                                      
-              <span className="header-title">DimSteer</span>                                                                                        
-              <span className="header-sub">                                                                                                                    
-                Prompt-local PCA activation steering                                                                                                           
-              </span>                                                                                                                                          
+              <span className="header-title">DimSteer</span>
             </div>                                                                                                                                             
                                                                                                                                                               
           </header>                                                                                                                                            
@@ -1329,7 +1352,7 @@ export default function App() {
                   {msg.role === 'ai' && (                                                                                                                      
                     <div className="msg-ai">                                                                                                                   
                       <div className="ai-avatar" aria-hidden="true">                                                                                           
-                        AI                                                                                                                                     
+                        <DimSteerGlyph />
                       </div>                                                                                                                                   
                                                                                                                                                               
                       <div className="ai-content">                                                                                                             
@@ -1420,10 +1443,10 @@ export default function App() {
             <div>                                                                                                                                              
               <div className="controls-title">                                                                                                                 
                 <SlidersHorizontal size={15} aria-hidden="true" />                                                                                             
-                PCA controls                                                                                                                                   
+                Discovered controls
               </div>                                                                                                                                           
               <div className="controls-subtitle">                                                                                                              
-                Prompt-local latent dimensions discovered from sampled completions.                                                                            
+                Prompt-local dimensions of variation surfaced from sampled drafts.
               </div>                                                                                                                                           
             </div>                                                                                                                                             
                                                                                                                                                               
@@ -1631,11 +1654,7 @@ export default function App() {
               )}                                                                                                                                               
             </div>                                                                                                                                             
           )}                                                                                                                                                   
-                                                                                                                                                              
-          <div className="controls-footer">                                                                                                                    
-            <div className="live-dot" aria-hidden="true" />                                                                                                    
-            <span className="footer-text">PyTorch GPU · PCA steering backend</span>                                                                            
-          </div>                                                                                                                                               
+
         </aside>                                                                                                                                               
       </div>
   );                                                                                                                                                           

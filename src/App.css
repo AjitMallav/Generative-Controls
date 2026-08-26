@@ -1596,6 +1596,364 @@ textarea:disabled {
   font-family: var(--font-mono);
 }
 
+/* Compact study/demo density pass */
+.history-sidebar {
+  width: 232px;
+  gap: 8px;
+  padding: 10px;
+}
+
+.history-sidebar.closed {
+  width: 54px;
+  padding: 8px;
+  gap: 8px;
+}
+
+.history-brand {
+  height: 34px;
+  padding: 0 4px;
+}
+
+.history-brand-mark {
+  width: 21px;
+  height: 21px;
+  font-size: 0.68rem;
+}
+
+.history-close-btn,
+.history-toggle-btn,
+.history-open-btn,
+.collapsed-user-btn {
+  width: 30px;
+  height: 30px;
+}
+
+.history-sidebar.closed .history-open-btn,
+.history-sidebar.closed .collapsed-user-btn,
+.history-sidebar.closed .new-chat-btn,
+.history-sidebar.closed .history-search-btn {
+  width: 34px;
+  height: 34px;
+}
+
+.history-sidebar.closed .history-open-btn {
+  order: 1;
+}
+
+.history-sidebar.closed .new-chat-btn {
+  order: 2;
+}
+
+.history-sidebar.closed .history-search-btn {
+  order: 3;
+}
+
+.history-sidebar.closed .collapsed-user-btn {
+  order: 99;
+  margin-top: auto;
+}
+
+.new-chat-btn,
+.user-profile-select {
+  height: 34px;
+  font-size: 0.8rem;
+}
+
+.chat-search {
+  height: 32px;
+  padding: 0 8px;
+}
+
+.history-list {
+  gap: 2px;
+  padding-top: 6px;
+}
+
+.history-label {
+  padding: 0 7px 5px;
+  font-size: 0.68rem;
+}
+
+.history-item {
+  min-height: 31px;
+  padding: 6px 32px 6px 8px;
+  font-size: 0.79rem;
+}
+
+.history-delete-btn {
+  width: 24px;
+  height: 24px;
+  top: 3px;
+  right: 3px;
+}
+
+.history-footer {
+  padding: 6px 8px;
+  font-size: 0.66rem;
+}
+
+.chat-header {
+  height: 54px;
+  padding: 0 22px;
+}
+
+.logo,
+.ai-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  font-size: 0;
+  line-height: 0;
+}
+
+.logo {
+  color: #ffffff;
+}
+
+.ai-avatar {
+  background: #ffffff;
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.mark-glyph {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+.ai-avatar .mark-glyph {
+  width: 16px;
+  height: 16px;
+}
+
+.header-title {
+  font-size: 1.12rem;
+  line-height: 1;
+}
+
+.header-sub,
+.status-pill,
+.controls-subtitle,
+.footer-text {
+  font-size: 0.68rem;
+}
+
+.status-pill {
+  padding: 5px 8px;
+}
+
+.chat-messages {
+  padding: 24px 24px 124px;
+}
+
+.messages-inner {
+  max-width: 760px;
+  gap: 16px;
+}
+
+.msg-ai {
+  gap: 9px;
+}
+
+.msg-user-bubble {
+  padding: 9px 13px;
+  font-size: 0.88rem;
+  line-height: 1.48;
+}
+
+.ai-text,
+.ai-plain-text,
+.split-body,
+.diff-text {
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.ai-plain-text,
+.steered-view {
+  padding: 12px 14px;
+}
+
+.split-label {
+  margin-bottom: 7px;
+  font-size: 0.62rem;
+}
+
+.axis-badge {
+  padding: 3px 7px;
+  font-size: 0.61rem;
+}
+
+.status-line {
+  margin-top: 7px;
+  font-size: 0.68rem;
+}
+
+.input-wrap {
+  padding: 14px 28px 18px;
+}
+
+.input-inner {
+  max-width: 720px;
+  gap: 8px;
+  padding: 9px 9px 9px 14px;
+  border-radius: 18px;
+}
+
+.input-textarea {
+  max-height: 108px;
+  font-size: 0.88rem;
+  line-height: 1.44;
+}
+
+.send-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+}
+
+.controls-pane {
+  width: min(340px, 30vw);
+}
+
+.controls-header {
+  min-height: 54px;
+  padding: 9px 14px;
+}
+
+.controls-title {
+  font-size: 0.84rem;
+}
+
+.controls-subtitle {
+  margin-top: 2px;
+  max-width: 230px;
+  line-height: 1.25;
+}
+
+.axes-chip {
+  padding: 3px 7px;
+  font-size: 0.63rem;
+}
+
+.controls-scroll {
+  padding: 12px;
+  gap: 9px;
+}
+
+.axis-card {
+  padding: 12px;
+  border-radius: 9px;
+}
+
+.axis-header {
+  gap: 9px;
+  margin-bottom: 8px;
+}
+
+.axis-left {
+  gap: 8px;
+}
+
+.axis-dot {
+  width: 3px;
+  height: 26px;
+}
+
+.axis-name {
+  font-size: 0.83rem;
+}
+
+.axis-value {
+  min-width: 58px;
+  padding: 3px 7px;
+  font-size: 0.68rem;
+}
+
+.slider-wrap {
+  height: 28px;
+  margin: 2px 0 6px;
+}
+
+.slider-track-base,
+.slider-fill {
+  height: 6px;
+}
+
+.slider-input {
+  height: 28px;
+}
+
+.slider-input::-webkit-slider-runnable-track,
+.slider-input::-moz-range-track {
+  height: 6px;
+}
+
+.slider-input::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+  margin-top: -6px;
+}
+
+.slider-input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+}
+
+.center-mark {
+  height: 13px;
+}
+
+.axis-labels {
+  gap: 8px;
+}
+
+.axis-label {
+  font-size: 0.64rem;
+  line-height: 1.25;
+}
+
+.custom-box {
+  padding: 11px;
+}
+
+.custom-label {
+  margin-bottom: 7px;
+  font-size: 0.63rem;
+}
+
+.custom-input {
+  height: 34px;
+  padding: 0 10px;
+  font-size: 0.82rem;
+}
+
+.custom-btn {
+  width: 34px;
+  height: 34px;
+}
+
+.cloud-toggle {
+  height: 38px;
+  padding: 0 12px;
+}
+
+.cloud-list {
+  max-height: 230px;
+  padding: 8px;
+  gap: 6px;
+}
+
+.cloud-item {
+  padding: 7px 9px;
+}
+
+.controls-footer {
+  min-height: 40px;
+  padding: 0 14px;
+}
+
 @media (forced-colors: active) {
   .axis-dot,
   .slider-input,
