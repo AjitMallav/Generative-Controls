@@ -1826,6 +1826,36 @@ textarea:disabled {
   font-size: 0.84rem;
 }
 
+.controls-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.reset-controls-btn {
+  height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reset-controls-btn:hover:not(:disabled) {
+  border-color: #a9a9a9;
+  background: #ffffff;
+  color: var(--text-primary);
+}
+
+.reset-controls-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.44;
+}
+
 .controls-subtitle {
   margin-top: 2px;
   max-width: 230px;
@@ -1863,6 +1893,24 @@ textarea:disabled {
 
 .axis-name {
   font-size: 0.83rem;
+}
+
+.variance-tag {
+  width: fit-content;
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.axis-card.active .variance-tag {
+  border-color: color-mix(in srgb, var(--axis-color, var(--border-strong)) 36%, var(--border));
 }
 
 .axis-value {

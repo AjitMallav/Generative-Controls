@@ -509,6 +509,13 @@ const formatSteeringSummary = (axes: Axis[]) =>
     .filter((axis) => axis.currentValue !== 0)
     .map((axis) => `${axis.label} ${formatAlpha(axis.currentValue)}`)
     .join(' · ');
+
+const formatVariance = (variance?: number) => {
+  if (typeof variance !== 'number' || Number.isNaN(variance)) return 'Variance n/a';
+
+  const percentage = variance <= 1 ? variance * 100 : variance;
+  return `${percentage >= 10 ? percentage.toFixed(0) : percentage.toFixed(1)}% variance`;
+};
                                                                                                                                                               
 const truncate = (text: string | undefined, max = 34) => {                                                                                                     
   if (!text) return 'No example available';                                                                                                                    
@@ -1106,6 +1113,35 @@ export default function App() {
     setSteerLoadingId(null);                                                                                                                                   
   };                                                                                                                                                           
                                                                                                                                                               
+  const handleResetSteering = () => {
+    if (isProcessing || steerLoadingId || !axes.some((axis) => axis.currentValue !== 0)) return;
+
+    const targetMessage = [...messages]
+      .reverse()
+      .find((message) => message.role === 'ai' && message.baselineContent);
+
+    setAxes((previous) => previous.map((axis) => ({ ...axis, currentValue: 0 })));
+    setShowDiff(false);
+
+    if (!targetMessage?.baselineContent) return;
+
+    updateActiveMessages((previous) =>
+      previous.map((message) =>
+        message.id === targetMessage.id
+          ? {
+              ...message,
+              content: targetMessage.baselineContent || message.content,
+              isSteering: false,
+              cacheHit: false,
+              steeredAxis: undefined,
+              steeredValue: undefined,
+              steeredSummary: undefined,
+            }
+          : message
+      )
+    );
+  };
+
   const handleNewChat = () => {
     if (isProcessing || steerLoadingId) return;
 
@@ -1450,7 +1486,22 @@ export default function App() {
               </div>                                                                                                                                           
             </div>                                                                                                                                             
                                                                                                                                                               
-            {axes.length > 0 && <span className="axes-chip">{axes.length} axes</span>}                                                                         
+            {axes.length > 0 && (
+              <div className="controls-actions">
+                <button
+                  className="reset-controls-btn"
+                  onClick={handleResetSteering}
+                  disabled={
+                    isProcessing ||
+                    steerLoadingId !== null ||
+                    !axes.some((axis) => axis.currentValue !== 0)
+                  }
+                >
+                  Reset
+                </button>
+                <span className="axes-chip">{axes.length} axes</span>
+              </div>
+            )}
           </div>                                                                                                                                               
                                                                                                                                                               
           {axes.length === 0 ? (                                                                                                                               
@@ -1490,7 +1541,8 @@ export default function App() {
                         />                                                                                                                                     
                                                                                                                                                               
                         <div className="axis-name-wrap">                                                                                                       
-                          <span className="axis-name">{axis.label}</span>                                                                                      
+                          <span className="axis-name">{axis.label}</span>
+                          <span className="variance-tag">{formatVariance(axis.variance)}</span>
                         </div>                                                                                                                                 
                       </div>                                                                                                                                   
                                                                                                                                                               
