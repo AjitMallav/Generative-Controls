@@ -1651,6 +1651,7 @@ textarea:disabled {
 .history-sidebar.closed .collapsed-user-btn {
   order: 99;
   margin-top: auto;
+  margin-bottom: 12px;
 }
 
 .new-chat-btn,
@@ -1791,20 +1792,23 @@ textarea:disabled {
 }
 
 .input-wrap {
-  padding: 14px 28px 18px;
+  padding: 12px 28px 16px;
 }
 
 .input-inner {
   max-width: 720px;
   gap: 8px;
-  padding: 9px 9px 9px 14px;
-  border-radius: 18px;
+  align-items: center;
+  padding: 6px 7px 6px 12px;
+  border-radius: 17px;
 }
 
 .input-textarea {
-  max-height: 108px;
+  min-height: 20px;
+  max-height: 104px;
+  padding: 0;
   font-size: 0.88rem;
-  line-height: 1.44;
+  line-height: 20px;
 }
 
 .send-btn {
